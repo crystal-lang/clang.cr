@@ -1,5 +1,7 @@
 # libclang bindings for Crystal
 
+Usage:
+
 ```crystal
 require "clang"
 
@@ -19,6 +21,20 @@ tu.cursor.visit_children do |cursor|
 
   Clang::ChildVisitResult::Continue
 end
+```
+
+## Samples
+
+See the `samples` folder for some example usages:
+
+- `samples/debug.cr` will print the AST of C or C++ headers as they are parsed;
+- `samples/c2cr.cr` will automatically generate Crystal bindings for a C header.
+
+For example:
+
+```sh
+$ crystal build samples/c2cr.cr
+$ ./c2cr -I/usr/lib/llvm-5.0/include llvm-c/Core.h > Core.cr
 ```
 
 ## Reference
