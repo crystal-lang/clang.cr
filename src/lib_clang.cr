@@ -2,7 +2,26 @@ require "./lib_clang/error_code"
 require "./lib_clang/string"
 require "./lib_clang/build_system"
 
-@[Link("clang", ldflags: "`llvm-config-3.9 --ldflags 2>/dev/null || llvm-config --ldflags 2>/dev/null`")]
+{% begin %}
+lib LibClang
+  LLVM_CONFIG = {{
+                  `[ -n "$LLVM_CONFIG" ] && command -v "$LLVM_CONFIG" || \
+                   command -v llvm-config-5.0 || command -v llvm-config50 || \
+                   command -v llvm-config-4.0 || command -v llvm-config40 || \
+                   command -v llvm-config-3.9 || command -v llvm-config39 || \
+                   command -v llvm-config
+                  `.chomp.stringify
+                }}
+end
+{% end %}
+
+{% begin %}
+  {% if flag?(:static) %}
+    @[Link("clang", ldflags: "`{{LibClang::LLVM_CONFIG.id}} --ldflags --link-static 2> /dev/null`")]
+  {% else %}
+    @[Link("clang", ldflags: "`{{LibClang::LLVM_CONFIG.id}} --ldflags 2> /dev/null`")]
+  {% end %}
+{% end %}
 lib LibClang
   alias Char = LibC::Char
   alias Double = LibC::Double
