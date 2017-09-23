@@ -63,7 +63,6 @@ module C2CR
       value = String.build do |str|
         previous = nil
         translation_unit.tokenize(cursor.extent, skip: 1) do |token|
-          #p [:token, token]
           case token.kind
           when .comment?
             next
@@ -81,11 +80,34 @@ module C2CR
         end
       end
 
-      #    puts "  #{cursor.spelling} = #{value}"
+      if value.starts_with?('(') && value.ends_with?(')')
+        value = value[1..-2]
+      end
+
+      if valid_crystal_literal?(value)
+        puts "  #{cursor.spelling} = #{value}"
+      else
+        puts "  # #{cursor.spelling} = #{value}"
+      end
+    end
+
+    private def valid_crystal_literal?(value)
+      case value
+      when /^[-+]?(UInt|Long|ULong|LongLong|ULongLong)\.new\([+-]?[e0-9a-fA-F]+\)$/,
+        true
+      when /^0x[e0-9a-fA-F]+$/
+        true
+      when /^[+-]?[e0-9a-fA-F]+$/
+        true
+      when /^[_A-Z][_A-Za-z0-9]+$/
+        true
+      else
+        false
+      end
     end
 
     private def parse_literal_token(literal, io)
-      if literal =~ /^((0[xo])?([+\-0-9A-F.e]+))(F|L|UL|LL|ULL)?$/i
+      if literal =~ /^((0[X])?([+\-0-9A-F.e]+))(F|L|U|UL|LL|ULL)?$/i
         number, prefix, digits, suffix = $1, $2?, $3, $4?
 
         if prefix == "0x" && suffix == "F" && digits.size.odd?
@@ -93,6 +115,8 @@ module C2CR
           io << literal
         else
           case suffix.try(&.upcase)
+          when "U"
+            io << "UInt.new(" << number << ")"
           when "L"
             if number.index('.')
               io << "LongDouble.new(" << number << ")"
@@ -199,6 +223,8 @@ module C2CR
       type = cursor.enum_decl_integer_type.canonical_type
       puts "  enum #{Constant.to_crystal(spelling)} : #{Type.to_crystal(type)}"
 
+      values = [] of {String, Int64|UInt64}
+
       cursor.visit_children do |c|
         case c.kind
         when .enum_constant_decl?
@@ -206,14 +232,25 @@ module C2CR
                   when .u_int? then c.enum_constant_decl_unsigned_value
                   else              c.enum_constant_decl_value
                   end
-          puts "    #{c.spelling} = #{value}"
+          values << {c.spelling, value}
         else
           puts "    # WARNING: unexpected #{c.kind} within #{cursor.kind} (visit_enum)"
         end
         Clang::ChildVisitResult::Continue
       end
 
+      values.each do |(name, value)|
+        puts "    #{name} = #{value}"
+      end
+
       puts "  end"
+
+      # alias enum values as constants, so we can use LibC::GTK_ARROWS_BOTH
+      # instead of LibC::GtkArrowPlacement::GTK_ARROWS_BOTH but still take
+      # profit of enum type safety.
+      values.each do |(name, value)|
+        puts "  alias #{name} = #{spelling}::#{name}"
+      end
     end
 
     def visit_struct(cursor, spelling = cursor.spelling)
