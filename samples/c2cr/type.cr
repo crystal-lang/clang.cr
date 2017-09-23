@@ -20,7 +20,10 @@ module C2CR
       when .double? then "Double"
       when .long_double? then "LongDouble"
       when .pointer? then visit_pointer(type)
-      when .enum?, .record? then Constant.to_crystal(type.cursor.spelling)
+      when .enum?, .record?
+        spelling = type.cursor.spelling
+        spelling = type.spelling if type.cursor.spelling.empty?
+        Constant.to_crystal(spelling)
       when .elaborated? then to_crystal(type.named_type)
       when .typedef?
         if (spelling = type.spelling).starts_with?('_')
