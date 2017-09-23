@@ -2,7 +2,7 @@ require "./type_kind"
 
 module Clang
   struct Type
-    def initialize(@type : LibClang::Type)
+    def initialize(@type : LibC::CXType)
     end
 
     def kind
@@ -10,112 +10,112 @@ module Clang
     end
 
     def spelling
-      Clang.string(LibClang.getTypeSpelling(self))
+      Clang.string(LibC.clang_getTypeSpelling(self))
     end
 
     def objc_type_encoding
-      Clang.string(LibClang.type_getObjCEncoding(self))
+      Clang.string(LibC.clang_Type_getObjCEncoding(self))
     end
 
     def canonical_type
-      Type.new(LibClang.getCanonicalType(self))
+      Type.new(LibC.clang_getCanonicalType(self))
     end
 
     def cursor
-      Cursor.new(LibClang.getTypeDeclaration(self))
+      Cursor.new(LibC.clang_getTypeDeclaration(self))
     end
 
     def const_qualified?
-      LibClang.isConstQualifiedType(self) == 1
+      LibC.clang_isConstQualifiedType(self) == 1
     end
 
     def volatile_qualified?
-      LibClang.isVolatileQualifiedType(self) == 1
+      LibC.clang_isVolatileQualifiedType(self) == 1
     end
 
     def restrict_qualified?
-      LibClang.isRestrictQualifiedType(self) == 1
+      LibC.clang_isRestrictQualifiedType(self) == 1
     end
 
     def pointee_type
       # TODO: restrict to Pointer, BlockPointer, ObjCObjectPointer, MemberPointer
-      Type.new(LibClang.getPointeeType(self))
+      Type.new(LibC.clang_getPointeeType(self))
     end
 
     def calling_conv
       # TODO: restrict to FunctionProto, FunctionNoProto
-      LibClang.getFunctionTypeCallingConv(self)
+      LibC.clang_getFunctionTypeCallingConv(self)
     end
 
     def result_type
       # TODO: restrict to FunctionProto, FunctionNoProto
-      Type.new(LibClang.getResultType(self))
+      Type.new(LibC.clang_getResultType(self))
     end
 
     def arguments
       # TODO: restrict to FunctionProto, FunctionNoProto
-      Array(Type).new(LibClang.getNumArgTypes(self)) do |i|
-        Type.new(LibClang.getArgType(self, i))
+      Array(Type).new(LibC.clang_getNumArgTypes(self)) do |i|
+        Type.new(LibC.clang_getArgType(self, i))
       end
     end
 
     def variadic?
       # TODO: restrict to FunctionProto, FunctionNoProto
-      LibClang.isFunctionTypeVariadic(self) == 1
+      LibC.clang_isFunctionTypeVariadic(self) == 1
     end
 
     def pod?
-      LibClang.isPODType(self) == 1
+      LibC.clang_isPODType(self) == 1
     end
 
     def element_type
-      Type.new(LibClang.getElementType(self))
+      Type.new(LibC.clang_getElementType(self))
     end
 
     def num_elements
-      LibClang.getNumElements(self)
+      LibC.clang_getNumElements(self)
     end
 
     def array_element_type
       # TODO: restrict to ConstantArray, IncompleteArray, VariableArray, DependentSizedArray
-      Type.new(LibClang.getArrayElementType(self))
+      Type.new(LibC.clang_getArrayElementType(self))
     end
 
     def array_size
       # TODO: restrict to ConstantArray
-      LibClang.getArraySize(self)
+      LibC.clang_getArraySize(self)
     end
 
     def named_type
-      Type.new(LibClang.type_getNamedType(self))
+      Type.new(LibC.clang_Type_getNamedType(self))
     end
 
     def align_of
-      LibClang.type_getAlignOf(self)
+      LibC.clang_Type_getAlignOf(self)
     end
 
     def class_type
-      Type.new(LibClang.type_getClassType(self))
+      Type.new(LibC.clang_Type_getClassType(self))
     end
 
     def size_of
-      LibClang.type_getSizeOf(self)
+      LibC.clang_Type_getSizeOf(self)
     end
 
     def offset_of(field_name)
-      LibClang.type_getOffsetOf(self, field_name)
+      LibC.clang_Type_getOffsetOf(self, field_name)
     end
 
     def template_arguments
       # TODO: restrict to FunctionProto, FunctionNoProto
-      Array(Type).new(LibClang.type_getNumTemplateArguments(self)) do |i|
-        Type.new(LibClang.type_getTemplateArgumentAsType(self, i))
+      Array(Type).new(LibC.clang_Type_getNumTemplateArguments(self)) do |i|
+        Type.new(LibC.clang_Type_getTemplateArgumentAsType(self, i))
       end
     end
 
     def cxx_ref_qualifier
       # TODO: restrict to FunctionProto, FunctionNoProto
-      LibClang.type_getCXXRefQualifier(self)
+      LibC.clang_Type_getCXXRefQualifier(self)
     end
 
     def to_unsafe

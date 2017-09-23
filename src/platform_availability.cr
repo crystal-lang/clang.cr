@@ -4,7 +4,7 @@ module Clang
     end
 
     def finalize
-      LibClang.disposePlatformAvailability(self)
+      LibC.clang_disposePlatformAvailability(self)
     end
 
     def platform

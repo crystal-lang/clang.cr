@@ -1,10 +1,10 @@
 module Clang
   struct File
-    def initialize(@file : LibClang::File)
+    def initialize(@file : LibC::CXFile)
     end
 
     def ==(other : File)
-      LibClang.file_isEqual(self, other) != 0
+      LibC.clang_file_isEqual(self, other) != 0
     end
 
     def ==(other)
@@ -12,15 +12,15 @@ module Clang
     end
 
     def name
-      Clang.string(LibClang.getFileName(self))
+      Clang.string(LibC.clang_getFileName(self))
     end
 
     def time
-      Time.epoch(LibClang.getFileTime(self))
+      Time.epoch(LibC.clang_getFileTime(self))
     end
 
     def unique_id
-      ret = LibClang.getFileUniqueID(self, out uid)
+      ret = LibC.clang_getFileUniqueID(self, out uid)
       raise Error.new("clang_getFileUniqueID failure") unless ret == 0
       uid
     end

@@ -59,7 +59,7 @@ module Clang
     Elaborated = 119
 
     def spelling
-      Clang.string(LibClang.getTypeKindSpelling(self))
+      Clang.string(LibC.clang_getTypeKindSpelling(self))
     end
   end
 end

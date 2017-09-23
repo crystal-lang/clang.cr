@@ -1,40 +1,40 @@
 module Clang
   class EvalResult
-    alias Kind = LibClang::EvalResultKind
+    alias Kind = LibC::CXEvalResultKind
 
-    def initialize(@result : LibClang::EvalResult)
+    def initialize(@result : LibC::CXEvalResult)
     end
 
     def kind
-      LibClang.evalResult_getKind(self)
+      LibC.clang_evalResult_getKind(self)
     end
 
     def as_int
-      LibClang.evalResult_getAsInt(self)
+      LibC.clang_evalResult_getAsInt(self)
     end
 
     # def unsigned?
-    #   LibClang.evalResult_isUnsignedInt(self) != 0
+    #   LibC.clang_evalResult_isUnsignedInt(self) != 0
     # end
 
     # def as_unsigned
-    #   LibClang.evalResult_getAsUnsigned(self)
+    #   LibC.clang_evalResult_getAsUnsigned(self)
     # end
 
     # def as_long_long
-    #   LibClang.evalResult_getAsLongLong(self)
+    #   LibC.clang_evalResult_getAsLongLong(self)
     # end
 
     def as_double
-      LibClang.evalResult_getAsDouble(self)
+      LibC.clang_evalResult_getAsDouble(self)
     end
 
     def as_str
-      Clang.string(LibClang.evalResult_getAsStr(self))
+      Clang.string(LibC.clang_evalResult_getAsStr(self))
     end
 
     def finalize
-      LibClang.evalResult_dispose(self)
+      LibC.clang_evalResult_dispose(self)
     end
 
     def to_unsafe

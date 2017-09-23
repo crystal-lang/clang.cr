@@ -3,20 +3,20 @@ require "./platform_availability"
 require "./eval_result"
 
 module Clang
-  alias ChildVisitResult = LibClang::ChildVisitResult
-  alias Linkage = LibClang::LanguageKind
-  alias Availability = LibClang::LanguageKind
-  alias Visibility = LibClang::LanguageKind
-  alias Language = LibClang::LanguageKind
-  alias AccessSpecifier = LibClang::AccessSpecifier
-  alias StorageClass = LibClang::StorageClass
+  alias ChildVisitResult = LibC::CXChildVisitResult
+  alias Linkage = LibC::CXLanguageKind
+  alias Availability = LibC::CXLanguageKind
+  alias Visibility = LibC::CXLanguageKind
+  alias Language = LibC::CXLanguageKind
+  alias AccessSpecifier = LibC::CXCXXAccessSpecifier
+  alias StorageClass = LibC::CXStorageClass
 
   struct Cursor
-    def initialize(@cursor : LibClang::Cursor)
+    def initialize(@cursor : LibC::CXCursor)
     end
 
     def ==(other : Cursor)
-      LibClang.equalCursors(self, other) != 0
+      LibC.clang_equalCursors(self, other) != 0
     end
 
     def ==(other)
@@ -28,103 +28,103 @@ module Clang
     end
 
     def type
-      Type.new(LibClang.getCursorType(self))
+      Type.new(LibC.clang_getCursorType(self))
     end
 
     def visit_children(&block : Cursor -> ChildVisitResult)
-      LibClang.visitChildren(self, ->(cursor, parent, data) {
+      LibC.clang_visitChildren(self, ->(cursor, parent, data) {
         proc = Box(typeof(block)).unbox(data)
         proc.call(Cursor.new(cursor))
       }, Box.box(block))
     end
 
     def has_attributes?
-      LibClang.cursor_hasAttrs(self) == 1
+      LibC.clang_Cursor_hasAttrs(self) == 1
     end
 
     def language
-      LibClang.getCursorLanguage(self)
+      LibC.clang_getCursorLanguage(self)
     end
 
     def hash
-      LibClang.hashCursor(self)
+      LibC.clang_hashCursor(self)
     end
 
     def linkage
-      LibClang.getCursorLinkage(self)
+      LibC.clang_getCursorLinkage(self)
     end
 
     def visibility
-      LibClang.getCursorVisibility(self)
+      LibC.clang_getCursorVisibility(self)
     end
 
     def availability
-      LibClang.getCursorAvailability(self)
+      LibC.clang_getCursorAvailability(self)
     end
 
     def platform_availability
-      LibClang.getCursorPlatformAvailability(self, nil, nil, nil, nil, out availability, out size)
+      LibC.clang_getCursorPlatformAvailability(self, nil, nil, nil, nil, out availability, out size)
       Array(PlatformAvailability).new(size).new { |i| PlatformAvailability.new(availability[i]) }
     end
 
     def semantic_parent
-      Cursor.new LibClang.getCursorSemanticParent(self)
+      Cursor.new LibC.clang_getCursorSemanticParent(self)
     end
 
     def lexical_parent
-      Cursor.new LibClang.getCursorLexicalParent(self)
+      Cursor.new LibC.clang_getCursorLexicalParent(self)
     end
 
     # def included_file
-    #   File.new(LibClang.getIncludedFile(self))
+    #   File.new(LibC.clang_getIncludedFile(self))
     # end
 
     def location
-      SourceLocation.new(LibClang.getCursorLocation(self))
+      SourceLocation.new(LibC.clang_getCursorLocation(self))
     end
 
     def extent
-      LibClang.getCursorExtent(self)
+      LibC.clang_getCursorExtent(self)
     end
 
     def overriden_cursors
-      LibClang.getOverriddenCursors(self, out overriden, out size)
+      LibC.clang_getOverriddenCursors(self, out overriden, out size)
       Array(Cursor).new(size) { |i| Cursor.new(overriden[i]) }
     ensure
-      LibClang.disposeOverriddenCursors(overriden) if overriden
+      LibC.clang_disposeOverriddenCursors(overriden) if overriden
     end
 
     def typedef_decl_underlying_type
-      Type.new(LibClang.getTypedefDeclUnderlyingType(self))
+      Type.new(LibC.clang_getTypedefDeclUnderlyingType(self))
     end
 
     def enum_decl_integer_type
-      Type.new(LibClang.getEnumDeclIntegerType(self))
+      Type.new(LibC.clang_getEnumDeclIntegerType(self))
     end
 
     def enum_constant_decl_value
       raise ArgumentError.new("error: cursor is #{kind} not EnumConstantDecl") unless kind.enum_constant_decl?
-      LibClang.getEnumConstantDeclValue(self)
+      LibC.clang_getEnumConstantDeclValue(self)
     end
 
     def enum_constant_decl_unsigned_value
       raise ArgumentError.new("error: cursor is #{kind} not EnumConstantDecl") unless kind.enum_constant_decl?
-      LibClang.getEnumConstantDeclUnsignedValue(self)
+      LibC.clang_getEnumConstantDeclUnsignedValue(self)
     end
 
     def field_decl_bit_width
-      LibClang.getFieldDeclBitWidth(self)
+      LibC.clang_getFieldDeclBitWidth(self)
     end
 
     def arguments
-      Array(Cursor).new(LibClang.cursor_getNumArguments(self)) do |i|
-        Cursor.new(LibClang.cursor_getArgument(self, i))
+      Array(Cursor).new(LibC.clang_Cursor_getNumArguments(self)) do |i|
+        Cursor.new(LibC.clang_Cursor_getArgument(self, i))
       end
     end
 
     # def template_arguments
-    #   Array(???).new(LibClang.cursor_getNumTemplateArguments(self)) do |i|
-    #     case LibClang.cursor_getTemplateArgumentKind(self, i)
+    #   Array(???).new(LibC.clang_Cursor_getNumTemplateArguments(self)) do |i|
+    #     case LibC.clang_Cursor_getTemplateArgumentKind(self, i)
     #     when .null?
     #     when .type?
     #     when .declaration?
@@ -139,57 +139,57 @@ module Clang
     # end
 
     def macro_function_like?
-      LibClang.cursor_isMacroFunctionLike(self) == 1
+      LibC.clang_Cursor_isMacroFunctionLike(self) == 1
     end
 
     def macro_builtin?
-      LibClang.cursor_isMacroBuiltin(self) == 1
+      LibC.clang_Cursor_isMacroBuiltin(self) == 1
     end
 
     def function_inlined?
-      LibClang.cursor_isFunctionInlined(self) == 1
+      LibC.clang_Cursor_isFunctionInlined(self) == 1
     end
 
     def objc_type_encoding
-      Clang.string(LibClang.getDeclObjCTypeEncoding(self))
+      Clang.string(LibC.clang_getDeclObjCTypeEncoding(self))
     end
 
     def result_type
-      Type.new(LibClang.getCursorResultType(self))
+      Type.new(LibC.clang_getCursorResultType(self))
     end
 
     def offset_of_field
-      LibClang.cursor_getOffsetOfField(self)
+      LibC.clang_Cursor_getOffsetOfField(self)
     end
 
     def anonymous?
-      LibClang.cursor_isAnonymous(self) == 1
+      LibC.clang_Cursor_isAnonymous(self) == 1
     end
 
     def bit_field?
-      LibClang.cursor_isBitField(self) == 1
+      LibC.clang_Cursor_isBitField(self) == 1
     end
 
     def virtual_base?
-      LibClang.isVirtualBase(self) == 1
+      LibC.clang_isVirtualBase(self) == 1
     end
 
     def cxx_access_specifier
-      LibClang.getCXXAccessSpecifier(self)
+      LibC.clang_getCXXAccessSpecifier(self)
     end
 
     def storage_class
-      LibClang.cursor_getStorageClass(self)
+      LibC.clang_Cursor_getStorageClass(self)
     end
 
     def overloads
-      Array(Cursor).new(LibClang.getNumOverloadedDecls(self)).new do |i|
-        Cursor.new(LibClang.getOverloadedDecl(self, i))
+      Array(Cursor).new(LibC.clang_getNumOverloadedDecls(self)).new do |i|
+        Cursor.new(LibC.clang_getOverloadedDecl(self, i))
       end
     end
 
     def ib_outlet_collection_type
-      Type.new(LibClang.getIBOutletCollectionType(self))
+      Type.new(LibC.clang_getIBOutletCollectionType(self))
     end
 
 
@@ -199,68 +199,68 @@ module Clang
 
     # CROSS REFERENCING
 
-    # Returns a raw `LibClang::String`, use `Clang.string(usr, dispose: false)`
+    # Returns a raw `LibC::CXString`, use `Clang.string(usr, dispose: false)`
     # to get a String.
     def usr
-      LibClang.getCursorUSR(self)
+      LibC.clang_getCursorUSR(self)
     end
 
-    # USR constructors return a raw `LibClang::String`, use
+    # USR constructors return a raw `LibC::CXString`, use
     # `Clang.string(usr, dispose: false)` to get a String.
     module USR
       def self.objc_class(name)
-        LibClang.constructUSR_ObjCClass(name)
+        LibC.clang_constructUSR_ObjCClass(name)
       end
 
       def self.objc_category(class_name, category_name)
-        LibClang.constructUSR_ObjCCategory(class_name, category_name)
+        LibC.clang_constructUSR_ObjCCategory(class_name, category_name)
       end
 
       def self.objc_protocol(name)
-        LibClang.constructUSR_ObjCProtocol(name)
+        LibC.clang_constructUSR_ObjCProtocol(name)
       end
 
-      def self.objc_ivar(name, class_usr : LibClang::String)
-        LibClang.constructUSR_ObjCIvar(name, class_usr)
+      def self.objc_ivar(name, class_usr : LibC::CXString)
+        LibC.clang_constructUSR_ObjCIvar(name, class_usr)
       end
 
-      def self.objc_method(name, instance, class_usr : LibClang::String)
-        LibClang.constructUSR_ObjCMethod(name, instance ? 1 : 0, class_usr)
+      def self.objc_method(name, instance, class_usr : LibC::CXString)
+        LibC.clang_constructUSR_ObjCMethod(name, instance ? 1 : 0, class_usr)
       end
 
-      def self.objc_property(name, class_usr : LibClang::String)
-        LibClang.constructUSR_ObjCProperty(property, class_usr)
+      def self.objc_property(name, class_usr : LibC::CXString)
+        LibC.clang_constructUSR_ObjCProperty(property, class_usr)
       end
     end
 
     def spelling
-      Clang.string(LibClang.getCursorSpelling(self))
+      Clang.string(LibC.clang_getCursorSpelling(self))
     end
 
     # def spelling_name_range(piece_index, options = 0)
-    #   SourceRange.new(LibClang.cursor_getSpellingNameRange(self, piece_index, options))
+    #   SourceRange.new(LibC.clang_Cursor_getSpellingNameRange(self, piece_index, options))
     # end
 
     def display_name
-      Clang.string(LibClang.getCursorDisplayName(self))
+      Clang.string(LibC.clang_getCursorDisplayName(self))
     end
 
     def referenced
-      Cursor.new(LibClang.getCursorReferenced(self))
+      Cursor.new(LibC.clang_getCursorReferenced(self))
     end
 
     def definition?
-      if LibClang.isCursorDefinition(self) == 1
+      if LibC.clang_isCursorDefinition(self) == 1
         definition
       end
     end
 
     def definition
-      Cursor.new(LibClang.getCursorReferenced(self))
+      Cursor.new(LibC.clang_getCursorReferenced(self))
     end
 
     def canonical_cursor
-      Cursor.new(LibClang.getCanonicalCursor(self))
+      Cursor.new(LibC.clang_getCanonicalCursor(self))
     end
 
     def objc_selector_index
@@ -268,63 +268,63 @@ module Clang
     end
 
     def dynamic_call?
-      LibClang.cursor_isDynamicCall(self)
+      LibC.clang_Cursor_isDynamicCall(self)
     end
 
     def receiver_type
-      Type.new(LibClang.cursor_getReceiverType(self))
+      Type.new(LibC.clang_Cursor_getReceiverType(self))
     end
 
     def objc_property_attributes
-      LibClang.cursor_getObjCPropertyAttributes(self, 0)
+      LibC.clang_Cursor_getObjCPropertyAttributes(self, 0)
     end
 
     # def comment_range
-    #   SourceRange.new(LibClang.cursor_getCommentRange(self))
+    #   SourceRange.new(LibC.clang_Cursor_getCommentRange(self))
     # end
 
     def raw_comment_text
-      Clang.string(LibClang.cursor_getRawCommentText(self))
+      Clang.string(LibC.clang_Cursor_getRawCommentText(self))
     end
 
     def get_bried_comment_text
-      Clang.string(LibClang.cursor_getBriefCommentText(self))
+      Clang.string(LibC.clang_Cursor_getBriefCommentText(self))
     end
 
     def objc_decl_qualifiers
-      LibClang.cursor_getObjCDeclQualifiers(self)
+      LibC.clang_Cursor_getObjCDeclQualifiers(self)
     end
 
     def objc_optional?
-      LibClang.cursor_isObjCOptional(self) == 1
+      LibC.clang_Cursor_isObjCOptional(self) == 1
     end
 
     def variadic?
-      LibClang.cursor_isVariadic(self)
+      LibC.clang_Cursor_isVariadic(self)
     end
 
     # def comment_range?
-    #   SourceRange.new(LibClang.cursor_getCommentRange(self))
+    #   SourceRange.new(LibC.clang_Cursor_getCommentRange(self))
     # end
 
     def evaluate
-      if ptr = LibClang.cursor_Evaluate(self)
+      if ptr = LibC.clang_Cursor_Evaluate(self)
         EvalResult.new(ptr)
       end
     end
 
     def mangling
-      Clang.string(LibClang.cursor_getMangling(self))
+      Clang.string(LibC.clang_Cursor_getMangling(self))
     end
 
     def cxx_manglings
-      if list = LibClang.cursor_getCXXManglings(self)
+      if list = LibC.clang_Cursor_getCXXManglings(self)
         Array(String).new(list.value.count) do |i|
           Clang.string(list.value.strings[i], dispose: false)
         end
       end
     ensure
-      LibClang.disposeStringSet(list) if list
+      LibC.clang_disposeStringSet(list) if list
     end
 
     def inspect(io)

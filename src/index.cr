@@ -1,6 +1,6 @@
 module Clang
   class Index
-    alias GlobalOptions = LibClang::GlobalOptions
+    alias GlobalOptions = LibC::CXGlobalOptFlags
 
     # Creates a new Index.
     #
@@ -10,19 +10,19 @@ module Clang
     #   in a precompiled header that was used by the translation unit. If zero,
     #   all declarations will be enumerated.
     def initialize(exclude_declarations_from_pch = false, display_diagnostics = true)
-      @index = LibClang.createIndex(exclude_declarations_from_pch ? 1 : 0, display_diagnostics ? 1 : 0)
+      @index = LibC.clang_createIndex(exclude_declarations_from_pch ? 1 : 0, display_diagnostics ? 1 : 0)
     end
 
     def finalize
-      LibClang.disposeIndex(self)
+      LibC.clang_disposeIndex(self)
     end
 
     def global_options
-      LibClang.index_getGlobalOptions(self)
+      LibC.clang_index_getGlobalOptions(self)
     end
 
     def global_options=(value : GlobalOptions)
-      LibClang.index_setGlobalOptions(self, value)
+      LibC.clang_index_setGlobalOptions(self, value)
       value
     end
 

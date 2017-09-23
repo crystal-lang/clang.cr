@@ -2,48 +2,48 @@ require "./file"
 
 module Clang
   struct SourceLocation
-    def initialize(@location : LibClang::SourceLocation)
+    def initialize(@location : LibC::CXSourceLocation)
     end
 
     def ==(other : SourceLocation)
-      LibClang.equalLocations(self, other) != 0
+      LibC.clang_equalLocations(self, other) != 0
     end
 
     def in_system_header?
-      LibClang.location_isInSystemHeader(self) == 1
+      LibC.clang_location_isInSystemHeader(self) == 1
     end
 
     def from_main_file?
-      LibClang.location_isFromMainFile(self) == 1
+      LibC.clang_location_isFromMainFile(self) == 1
     end
 
     def file_location
-      LibClang.getFileLocation(self, out file, out line, out column, out offset)
+      LibC.clang_getFileLocation(self, out file, out line, out column, out offset)
       {file ? File.new(file) : nil, line, column, offset}
     end
 
     def file_name
-      LibClang.getFileLocation(self, out file, nil, nil, nil)
-      Clang.string(LibClang.getFileName(file)) if file
+      LibC.clang_getFileLocation(self, out file, nil, nil, nil)
+      Clang.string(LibC.clang_getFileName(file)) if file
     end
 
     def spelling_location
-      LibClang.getSpellingLocation(self, out file, out line, out column, out offset)
+      LibC.clang_getSpellingLocation(self, out file, out line, out column, out offset)
       {file ? File.new(file) : nil, line, column, offset}
     end
 
     def expansion_location
-      LibClang.getExpansionLocation(self, out file, out line, out column, out offset)
+      LibC.clang_getExpansionLocation(self, out file, out line, out column, out offset)
       {file ? File.new(file) : nil, line, column, offset}
     end
 
     def instantiation_location
-      LibClang.getInstantiationLocation(self, out file, out line, out column, out offset)
+      LibC.clang_getInstantiationLocation(self, out file, out line, out column, out offset)
       {file ? File.new(file) : nil, line, column, offset}
     end
 
     def presumed_location
-      LibClang.getPresumedLocation(self, out file, out line, out column, out offset)
+      LibC.clang_getPresumedLocation(self, out file, out line, out column, out offset)
       {file ? File.new(file) : nil, line, column, offset}
     end
 

@@ -2,15 +2,15 @@ require "./token"
 
 module Clang
   class TranslationUnit
-    alias Options = LibClang::TranslationUnit_Flags
+    alias Options = LibC::CXTranslationUnitFlags
 
     def self.default_options
-      LibClang.defaultEditingTranslationUnitOptions() |
+      Options.new(LibC.clang_defaultEditingTranslationUnitOptions()) |
         Options::DetailedPreprocessingRecord
     end
 
     def self.from_pch(index, path)
-      error_code = LibClang.createTranslationUnit2(index, path, out unit)
+      error_code = LibC.clang_createTranslationUnit2(index, path, out unit)
       raise Error.from(error_code) unless error_code.success?
       new(unit)
     end
@@ -20,7 +20,7 @@ module Clang
                          args = [] of String,
                          options = default_options,
                          filename = files[0].filename)
-      error_code = LibClang.parseTranslationUnit2(
+      error_code = LibC.clang_parseTranslationUnit2(
         index, filename,
         args.map(&.to_unsafe), args.size,
         files.map(&.to_unsafe), files.size,
@@ -30,33 +30,33 @@ module Clang
     end
 
     def self.from_source_file(index, path, args = [] of String)
-      new LibClang.createTranslationUnitFromSourceFile(index, path, args.size, args.map(&.to_unsafe), 0, nil)
+      new LibC.clang_createTranslationUnitFromSourceFile(index, path, args.size, args.map(&.to_unsafe), 0, nil)
     end
 
-    protected def initialize(@unit : LibClang::TranslationUnit)
+    protected def initialize(@unit : LibC::CXTranslationUnit)
       raise "invalid translation unit pointer" unless @unit
     end
 
     def finalize
-      LibClang.disposeTranslationUnit(self)
+      LibC.clang_disposeTranslationUnit(self)
     end
 
     def cursor
-      Cursor.new LibClang.getTranslationUnitCursor(self)
+      Cursor.new LibC.clang_getTranslationUnitCursor(self)
     end
 
     def multiple_include_guarded?(file : File)
-      LibClang.isFileMultipleIncludeGuarded(self, file) == 1
+      LibC.clang_isFileMultipleIncludeGuarded(self, file) == 1
     end
 
     def tokenize(source_range, skip = 0)
-      LibClang.tokenize(self, source_range, out tokens, out count)
+      LibC.clang_tokenize(self, source_range, out tokens, out count)
       begin
         skip.upto(count - 1) do |index|
           yield Token.new(self, tokens[index])
         end
       ensure
-        LibClang.disposeTokens(self, tokens, count)
+        LibC.clang_disposeTokens(self, tokens, count)
       end
     end
 

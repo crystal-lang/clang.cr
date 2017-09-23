@@ -230,39 +230,39 @@ module Clang
     OverloadCandidate             = 700
 
     def declaration?
-      LibClang.isDeclaration(self) == 1
+      LibC.clang_isDeclaration(self) == 1
     end
 
     def reference?
-      LibClang.isReference(self) == 1
+      LibC.clang_isReference(self) == 1
     end
 
     def expression?
-      LibClang.isExpression(self) == 1
+      LibC.clang_isExpression(self) == 1
     end
 
     def statement?
-      LibClang.isStatement(self) == 1
+      LibC.clang_isStatement(self) == 1
     end
 
     def attribute?
-      LibClang.isAttribute(self) == 1
+      LibC.clang_isAttribute(self) == 1
     end
 
     def invalid?
-      LibClang.isInvalid(self) == 1
+      LibC.clang_isInvalid(self) == 1
     end
 
     def translation_unit?
-      LibClang.isTranslationUnit(self) == 1
+      LibC.clang_isTranslationUnit(self) == 1
     end
 
     def preprocessing?
-      LibClang.isPreprocessing(self) == 1
+      LibC.clang_isPreprocessing(self) == 1
     end
 
     def unexposed?
-      LibClang.isUnexposed(self) == 1
+      LibC.clang_isUnexposed(self) == 1
     end
   end
 end

@@ -1,7 +1,7 @@
 module Clang
   struct UnsavedFile
     def initialize(filename, contents)
-      @file = LibClang::UnsavedFile.new
+      @file = LibC::CXUnsavedFile.new
       @file.filename = filename
       @file.contents = contents
       @file.length = contents.size

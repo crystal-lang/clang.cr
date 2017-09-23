@@ -1,5 +1,6 @@
-lib LibClang
-  enum ErrorCode
+lib LibC
+  # LLVM_CLANG_C_CXERRORCODE_H = 
+  enum CXErrorCode : UInt
     Success = 0
     Failure = 1
     Crashed = 2

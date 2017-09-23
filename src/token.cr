@@ -2,25 +2,25 @@ require "./source_location"
 
 module Clang
   struct Token
-    Kind = LibClang::Kind
+    Kind = LibC::CXKind
 
-    def initialize(@translation_unit : TranslationUnit, @token : LibClang::Token)
+    def initialize(@translation_unit : TranslationUnit, @token : LibC::CXToken)
     end
 
     def kind
-      LibClang.getTokenKind(self)
+      LibC.clang_getTokenKind(self)
     end
 
     def spelling
-      Clang.string(LibClang.getTokenSpelling(@translation_unit, self))
+      Clang.string(LibC.clang_getTokenSpelling(@translation_unit, self))
     end
 
     def location
-      SourceLocation.new(LibClang.getTokenLocation(@translation_unit, self))
+      SourceLocation.new(LibC.clang_getTokenLocation(@translation_unit, self))
     end
 
     def extent
-      LibClang.getTokenExtent(@translation_unit, self)
+      LibC.clang_getTokenExtent(@translation_unit, self)
     end
 
     def to_unsafe
