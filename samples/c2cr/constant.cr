@@ -6,7 +6,10 @@ module C2CR
       when "uint16_t" then "UInt16"
       when "uint32_t" then "UInt32"
       when "uint64_t" then "UInt64"
-      else spelling.camelcase
+      when .starts_with?("const ")
+        spelling[6..-1].camelcase
+      else
+        spelling.camelcase
       end
     end
   end
