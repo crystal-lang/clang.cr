@@ -251,13 +251,6 @@ module C2CR
       end
 
       puts "  end"
-
-      # alias enum values as constants, so we can use LibC::GTK_ARROWS_BOTH
-      # instead of LibC::GtkArrowPlacement::GTK_ARROWS_BOTH but still take
-      # profit of enum type safety.
-      values.each do |(name, value)|
-        puts "  #{name} = #{spelling}::#{name}"
-      end
     end
 
     def visit_struct(cursor, spelling = cursor.spelling)
