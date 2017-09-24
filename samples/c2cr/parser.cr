@@ -7,6 +7,9 @@ module C2CR
     protected getter index : Clang::Index
     protected getter translation_unit : Clang::TranslationUnit
 
+    @remove_enum_prefix : String | Bool
+    @remove_enum_suffix : String | Bool
+
     enum Process
       EVERYTHING
       FILE
@@ -18,7 +21,10 @@ module C2CR
       parser
     end
 
-    def initialize(@header_name : String, args = [] of String, @process : Process = Process::FILE)
+    def initialize(@header_name : String, args = [] of String,
+                   @process : Process = Process::FILE,
+                   @remove_enum_prefix = false,
+                   @remove_enum_suffix = false)
       # TODO: support C++ (rename input.c to input.cpp)
       # TODO: support local filename (use quotes instead of angle brackets)
       files = [
@@ -246,11 +252,82 @@ module C2CR
         Clang::ChildVisitResult::Continue
       end
 
+      prefix = cleanup_prefix_from_enum_constant(cursor, values)
+      suffix = cleanup_suffix_from_enum_constant(cursor, values)
+
       values.each do |(name, value)|
-        puts "    #{name} = #{value}"
+        if name.includes?(spelling)
+          # when the enum spelling is fully duplicated in constants: remove it all
+          constant = name.sub(spelling, "")
+          while constant.starts_with?('_')
+            constant = constant[1..-1]
+          end
+        else
+          # remove similar prefix/suffix patterns from all constants:
+          start = prefix.size
+          stop = Math.max(suffix.size + 1, 1)
+          constant = name[start .. -stop]
+        end
+
+        unless constant[0].ascii_uppercase?
+          constant = Constant.to_crystal(constant)
+        end
+
+        puts "    #{constant} = #{value}"
       end
 
       puts "  end"
+    end
+
+    private def cleanup_prefix_from_enum_constant(cursor, values)
+      prefix = ""
+      reference = values.size > 1 ? values.first[0] : cursor.spelling
+
+      if pre = @remove_enum_prefix
+        reference = pre if pre.is_a?(String)
+
+        reference.each_char do |c|
+          testing = prefix + c
+
+          if values.all? { |e| e[0].starts_with?(testing) }
+            prefix = testing
+          else
+            # TODO: try to match a word delimitation, to only remove whole words
+            #       not a few letters that happen to match.
+            return prefix
+          end
+        end
+      end
+
+      prefix
+    end
+
+    private def cleanup_suffix_from_enum_constant(cursor, values)
+      suffix = ""
+      reference = values.size > 1 ? values.first[0] : cursor.spelling
+
+      if suf = @remove_enum_suffix
+        reference = suf if suf.is_a?(String)
+
+        reference.reverse.each_char do |c|
+          testing = c.to_s + suffix
+
+          if values.all? { |e| e[0].ends_with?(testing) }
+            suffix = testing
+          else
+            # try to match a word delimitation, to only remove whole words not a
+            # few letters that happen to match:
+            a, b = suffix[0]?, suffix[1]?
+            if a && b && (a == '_' || (a.ascii_uppercase? && !b.ascii_uppercase?))
+              return suffix
+            else
+              return ""
+            end
+          end
+        end
+      end
+
+      suffix
     end
 
     def visit_struct(cursor, spelling = cursor.spelling)
