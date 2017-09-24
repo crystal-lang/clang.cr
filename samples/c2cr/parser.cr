@@ -256,7 +256,7 @@ module C2CR
       # instead of LibC::GtkArrowPlacement::GTK_ARROWS_BOTH but still take
       # profit of enum type safety.
       values.each do |(name, value)|
-        puts "  alias #{name} = #{spelling}::#{name}"
+        puts "  #{name} = #{spelling}::#{name}"
       end
     end
 
