@@ -148,13 +148,20 @@ module C2CR
 
         if type.kind.elaborated?
           t = type.named_type
+          c = t.cursor
+
+          # did the typedef named the anonymous struct? in which case we do
+          # process the struct now, or did the struct already have a name? in
+          # which case we already processed it:
+          return unless c.spelling.empty?
+
           case t.kind
           when .record?
             # visit_typedef_struct(cursor, type.named_type.cursor)
-            visit_struct(type.named_type.cursor, cursor.spelling)
+            visit_struct(c, cursor.spelling)
           when .enum?
             # visit_typedef_enum(cursor, type.named_type.cursor)
-            visit_enum(type.named_type.cursor, cursor.spelling)
+            visit_enum(c, cursor.spelling)
           else
             puts "  # WARNING: unexpected #{t.kind} within #{cursor.kind} (visit_typedef)"
           end
