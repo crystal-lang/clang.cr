@@ -216,7 +216,7 @@ module C2CR
       if children.first.kind.parm_decl?
         ret = "Void"
       else
-        ret = Type.to_crystal(children.pop.type.canonical_type)
+        ret = Type.to_crystal(children.shift.type.canonical_type)
       end
 
       print "  alias #{cursor.spelling} = ("
