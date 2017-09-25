@@ -35,7 +35,11 @@ i = -1
 while arg = ARGV[i += 1]?
   case arg
   when "-I", "-D"
-    cflags << "#{cflags}#{ARGV[i += 1]}"
+    if value = ARGV[i += 1]?
+      cflags << value
+    else
+      abort "fatal : missing value for #{arg}"
+    end
   when .starts_with?("-I"), .starts_with?("-D")
     cflags << arg
   when .ends_with?(".h")
@@ -59,6 +63,26 @@ while arg = ARGV[i += 1]?
     else remove_enum_suffix = value
     end
 
+  when "--help"
+    STDERR.puts <<-EOF
+    usage : c2cr [--help] [options]
+
+    Some available options are:
+        -I<directory>   Adds directory to search path for include files
+        -D<name>        Adds an implicit #define
+
+    In addition, the CFLAGS environment variable will be used, so you may set it
+    up before compilation when search directories, defines, and other options
+    aren't fixed and can be dynamic.
+
+    The following options control how enum constants are cleaned up. By default
+    the value is false (no cleanup), whereas true will remove matching patterns,
+    while a fixed value will remove just that:
+        --remove-enum-prefix[=true,false,<value>]
+        --remove-enum-suffix[=true,false,<value>]
+    EOF
+    exit 0
+
   else
     abort "Unknown option: #{arg}"
   end
@@ -66,8 +90,12 @@ end
 
 default_include_directories(cflags)
 
+unless header
+  abort "fatal : no header to create bindings for."
+end
+
 parser = C2CR::Parser.new(
-  header.not_nil!,
+  header,
   cflags,
   remove_enum_prefix: remove_enum_prefix,
   remove_enum_suffix: remove_enum_suffix,
