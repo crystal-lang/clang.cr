@@ -44,15 +44,23 @@ while arg = ARGV[i += 1]?
   when "--remove-enum-prefix"
     remove_enum_prefix = true
   when .starts_with?("--remove-enum-prefix=")
-    remove_enum_prefix = arg[21..-1]
+    case value = arg[21..-1]
+    when "", "false" then remove_enum_prefix = false
+    when "true" then remove_enum_prefix = true
+    else remove_enum_prefix = value
+    end
 
   when "--remove-enum-suffix"
     remove_enum_suffix = true
   when .starts_with?("--remove-enum-suffix=")
-    remove_enum_suffix = arg[21..-1]
+    case value = arg[21..-1]
+    when "", "false" then remove_enum_suffix = false
+    when "true" then remove_enum_suffix = true
+    else remove_enum_suffix = value
+    end
 
   else
-    puts "Unknown option: #{arg}"
+    abort "Unknown option: #{arg}"
   end
 end
 
