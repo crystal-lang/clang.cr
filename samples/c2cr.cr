@@ -1,19 +1,43 @@
 require "./c2cr/parser"
 
-#  /usr/include
-#  /usr/lib/llvm-5.0/include
-#  /usr/lib/llvm-5.0/lib/clang/5.0.0/include # C++
-options = ["-I/usr/include"]
+def default_include_directories(cflags)
+  # args = {"-E", "-x", "c++", "-", "-v"}  # C++
+  args = {"-E", "-", "-v"}                 # C
+  Process.run("c++", args, shell: true, error: io = IO::Memory.new)
+
+  includes = [] of String
+  found_include = false
+
+  io.rewind.to_s.each_line do |line|
+    if line.starts_with?("#include ")
+      found_include = true
+    elsif found_include
+      line = line.lstrip
+      break unless line.starts_with?('.') || line.starts_with?('/')
+      includes << line.chomp
+    end
+  end
+
+  includes.reverse_each do |path|
+    cflags.unshift "-I#{path}"
+  end
+end
+
+cflags = [] of String
 header = nil
 remove_enum_prefix = remove_enum_suffix = false
+
+if arg = ENV["CFLAGS"]?
+  cflags += arg.split(' ').reject(&.empty?)
+end
 
 i = -1
 while arg = ARGV[i += 1]?
   case arg
   when "-I", "-D"
-    options << "#{options}#{ARGV[i += 1]}"
+    cflags << "#{cflags}#{ARGV[i += 1]}"
   when .starts_with?("-I"), .starts_with?("-D")
-    options << arg
+    cflags << arg
   when .ends_with?(".h")
     header = arg
 
@@ -32,9 +56,11 @@ while arg = ARGV[i += 1]?
   end
 end
 
+default_include_directories(cflags)
+
 parser = C2CR::Parser.new(
   header.not_nil!,
-  options,
+  cflags,
   remove_enum_prefix: remove_enum_prefix,
   remove_enum_suffix: remove_enum_suffix,
 )
