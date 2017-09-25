@@ -1,9 +1,15 @@
 require "./c2cr/parser"
 
 def default_include_directories(cflags)
-  # args = {"-E", "-x", "c++", "-", "-v"}  # C++
-  args = {"-E", "-", "-v"}                 # C
-  Process.run("c++", args, shell: true, error: io = IO::Memory.new)
+  # C++
+  # args = {"-E", "-x", "c++", "-", "-v"}
+  # program = ENV["CXX"]? || "c++"
+
+  # C
+  args = {"-E", "-", "-v"}
+  program = ENV["CC"]? || "cc"
+
+  Process.run(program, args, shell: true, error: io = IO::Memory.new)
 
   includes = [] of String
   found_include = false
