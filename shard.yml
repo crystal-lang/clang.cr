@@ -7,4 +7,8 @@ authors:
 description: |
   Bindings for libclang
 
+targets:
+  c2cr:
+    main: samples/c2cr.cr
+
 license: Apache-2.0

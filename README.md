@@ -33,8 +33,15 @@ See the `samples` folder for some example usages:
 For example:
 
 ```sh
-$ crystal build samples/c2cr.cr
-$ ./c2cr -I/usr/lib/llvm-5.0/include llvm-c/Core.h > Core.cr
+$ shards build --release
+
+$ bin/c2cr -I/usr/lib/llvm-5.0/include llvm-c/Core.h \
+    --remove-enum-prefix=LLVM --remove-enum-suffix > llvm-c/Core.cr
+
+$ bin/c2cr -I/usr/lib/llvm-5.0/include clang-c/Index.h \
+    --remove-enum-prefix > clang-c/Index.cr
+
+$ bin/c2cr gtk-2.0/gtk/gtkenums.h --remove-enum-prefix > gtk/enums.cr
 ```
 
 ## Reference
