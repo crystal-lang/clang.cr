@@ -219,7 +219,7 @@ module C2CR
         ret = Type.to_crystal(children.shift.type.canonical_type)
       end
 
-      print "  alias #{cursor.spelling} = ("
+      print "  alias #{Constant.to_crystal(cursor.spelling)} = ("
       children.each_with_index do |c, index|
         print ", " unless index == 0
         #unless c.spelling.empty?
