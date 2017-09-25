@@ -65,7 +65,7 @@ while arg = ARGV[i += 1]?
 
   when "--help"
     STDERR.puts <<-EOF
-    usage : c2cr [--help] [options]
+    usage : c2cr [--help] [options] <header.h>
 
     Some available options are:
         -I<directory>   Adds directory to search path for include files
