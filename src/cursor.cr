@@ -268,7 +268,7 @@ module Clang
     end
 
     def dynamic_call?
-      LibC.clang_Cursor_isDynamicCall(self)
+      LibC.clang_Cursor_isDynamicCall(self) == 1
     end
 
     def receiver_type
@@ -287,7 +287,7 @@ module Clang
       Clang.string(LibC.clang_Cursor_getRawCommentText(self))
     end
 
-    def get_bried_comment_text
+    def brief_comment_text
       Clang.string(LibC.clang_Cursor_getBriefCommentText(self))
     end
 
@@ -300,7 +300,7 @@ module Clang
     end
 
     def variadic?
-      LibC.clang_Cursor_isVariadic(self)
+      LibC.clang_Cursor_isVariadic(self) == 1
     end
 
     # def comment_range?

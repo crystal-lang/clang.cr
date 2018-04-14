@@ -13,17 +13,17 @@ module Clang
       LibC.clang_evalResult_getAsInt(self)
     end
 
-    # def unsigned?
-    #   LibC.clang_evalResult_isUnsignedInt(self) != 0
-    # end
+    def unsigned?
+      LibC.clang_evalResult_isUnsignedInt(self) != 0
+    end
 
-    # def as_unsigned
-    #   LibC.clang_evalResult_getAsUnsigned(self)
-    # end
+    def as_unsigned
+      LibC.clang_evalResult_getAsUnsigned(self)
+    end
 
-    # def as_long_long
-    #   LibC.clang_evalResult_getAsLongLong(self)
-    # end
+    def as_long_long
+      LibC.clang_evalResult_getAsLongLong(self)
+    end
 
     def as_double
       LibC.clang_evalResult_getAsDouble(self)

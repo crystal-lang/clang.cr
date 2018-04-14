@@ -7,7 +7,7 @@ module Clang
     # - *exclude_declarations_from_pch*: allow enumeration of "local"
     #   declarations (when loading any new translation units). A "local"
     #   declaration is one that belongs in the translation unit itself and not
-    #   in a precompiled header that was used by the translation unit. If zero,
+    #   in a precompiled header that was used by the translation unit. If false,
     #   all declarations will be enumerated.
     def initialize(exclude_declarations_from_pch = false, display_diagnostics = true)
       @index = LibC.clang_createIndex(exclude_declarations_from_pch ? 1 : 0, display_diagnostics ? 1 : 0)

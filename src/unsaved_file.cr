@@ -4,7 +4,7 @@ module Clang
       @file = LibC::CXUnsavedFile.new
       @file.filename = filename
       @file.contents = contents
-      @file.length = contents.size
+      @file.length = contents.bytesize
     end
 
     def filename

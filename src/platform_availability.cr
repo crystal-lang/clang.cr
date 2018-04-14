@@ -1,10 +1,10 @@
 module Clang
   class PlatformAvailability
-    def initialize(@platform)
+    def initialize(@platform : LibC::CXPlatformAvailability)
     end
 
     def finalize
-      LibC.clang_disposePlatformAvailability(self)
+      LibC.clang_disposeCXPlatformAvailability(self)
     end
 
     def platform

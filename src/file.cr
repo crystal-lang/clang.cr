@@ -4,7 +4,7 @@ module Clang
     end
 
     def ==(other : File)
-      LibC.clang_file_isEqual(self, other) != 0
+      LibC.clang_File_isEqual(self, other) != 0
     end
 
     def ==(other)
