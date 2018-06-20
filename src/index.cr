@@ -18,12 +18,16 @@ module Clang
     end
 
     def global_options
-      LibC.clang_index_getGlobalOptions(self)
+      LibC.clang_CXIndex_getGlobalOptions(self)
     end
 
     def global_options=(value : GlobalOptions)
-      LibC.clang_index_setGlobalOptions(self, value)
+      LibC.clang_CXIndex_setGlobalOptions(self, value)
       value
+    end
+
+    def set_invocation_emission_path_option(path : String)
+      LibC.clang_CXIndex_setInvocationEmissionPathOption(self, path)
     end
 
     def to_unsafe

@@ -327,6 +327,16 @@ module Clang
       LibC.clang_disposeStringSet(list) if list
     end
 
+    def objc_manglings
+      if list = LibC.clang_Cursor_getObjCManglings(self)
+        Array(String).new(list.value.count) do |i|
+          Clang.string(list.value.strings[i], dispose: false)
+        end
+      end
+    ensure
+      LibC.clang_disposeStringSet(list) if list
+    end
+
     def inspect(io)
       io << "<#"
       io << self.class.name

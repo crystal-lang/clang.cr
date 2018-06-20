@@ -1,7 +1,7 @@
 lib LibC
   # LLVM_CLANG_C_INDEX_H = 
   CINDEX_VERSION_MAJOR = 0
-  CINDEX_VERSION_MINOR = 43
+  CINDEX_VERSION_MINOR = 45
   # CINDEX_VERSION_ENCODE =  major, minor)((( major)*10000)+(( minor)*1)
   # CINDEX_VERSION = CINDEX_VERSION_ENCODE( CINDEX_VERSION_MAJOR, CINDEX_VERSION_MINOR)
   # CINDEX_VERSION_STRINGIZE_ =  major, minor
@@ -50,6 +50,7 @@ lib LibC
   end
   fun clang_CXIndex_setGlobalOptions(CXIndex, UInt) : Void
   fun clang_CXIndex_getGlobalOptions(CXIndex) : UInt
+  fun clang_CXIndex_setInvocationEmissionPathOption(CXIndex, Char*) : Void
   alias CXFile = Void*
   fun clang_getFileName(CXFile) : CXString
   fun clang_getFileTime(CXFile) : TimeT
@@ -59,6 +60,7 @@ lib LibC
   fun clang_getFileUniqueID(CXFile, CXFileUniqueID*) : Int
   fun clang_isFileMultipleIncludeGuarded(CXTranslationUnit, CXFile) : UInt
   fun clang_getFile(CXTranslationUnit, Char*) : CXFile
+  fun clang_getFileContents(CXTranslationUnit, CXFile, SizeT*) : Char*
   fun clang_File_isEqual(CXFile, CXFile) : Int
   struct CXSourceLocation
     ptr_data : StaticArray(Void*, 2)
@@ -501,6 +503,12 @@ lib LibC
     CPlusPlus = 3
   end
   fun clang_getCursorLanguage(CXCursor) : CXLanguageKind
+  enum CXTLSKind : UInt
+    None = 0
+    Dynamic = 1
+    Static = 2
+  end
+  fun clang_getCursorTLSKind(CXCursor) : CXTLSKind
   fun clang_Cursor_getTranslationUnit(CXCursor) : CXTranslationUnit
   type CXCursorSetImpl = Void
   alias CXCursorSet = CXCursorSetImpl*
@@ -549,8 +557,9 @@ lib LibC
     ObjCSel = 29
     Float128 = 30
     Half = 31
+    Float16 = 32
     FirstBuiltin = 2
-    LastBuiltin = 31
+    LastBuiltin = 32
     Complex = 100
     Pointer = 101
     BlockPointer = 102
@@ -797,6 +806,7 @@ lib LibC
   fun clang_Cursor_getBriefCommentText(CXCursor) : CXString
   fun clang_Cursor_getMangling(CXCursor) : CXString
   fun clang_Cursor_getCXXManglings(CXCursor) : CXStringSet*
+  fun clang_Cursor_getObjCManglings(CXCursor) : CXStringSet*
   alias CXModule = Void*
   fun clang_Cursor_getModule(CXCursor) : CXModule
   fun clang_getModuleForFile(CXTranslationUnit, CXFile) : CXModule
@@ -816,6 +826,7 @@ lib LibC
   fun clang_CXXMethod_isPureVirtual(CXCursor) : UInt
   fun clang_CXXMethod_isStatic(CXCursor) : UInt
   fun clang_CXXMethod_isVirtual(CXCursor) : UInt
+  fun clang_CXXRecord_isAbstract(CXCursor) : UInt
   fun clang_EnumDecl_isScoped(CXCursor) : UInt
   fun clang_CXXMethod_isConst(CXCursor) : UInt
   fun clang_getTemplateCursorKind(CXCursor) : CXCursorKind
