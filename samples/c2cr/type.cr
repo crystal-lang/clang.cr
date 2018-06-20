@@ -38,18 +38,21 @@ module C2CR
       #when .dependent_sized_array? then visit_dependent_sized_array(type)
       when .function_proto? then visit_function_proto(type)
       when .function_no_proto? then visit_function_no_proto(type)
+      when .unexposed? then to_crystal(type.canonical_type)
       else
         raise "unsupported C type: #{type}"
       end
     end
 
     def self.visit_pointer(type)
-      pointee = to_crystal(type.pointee_type.canonical_type)
+      #pointee = to_crystal(type.pointee_type.canonical_type)
+      pointee = to_crystal(type.pointee_type)
       "#{pointee}*"
     end
 
     def self.visit_constant_array(type)
-      element = to_crystal(type.array_element_type.canonical_type)
+      #element = to_crystal(type.array_element_type.canonical_type)
+      element = to_crystal(type.array_element_type)
       "StaticArray(#{element}, #{type.array_size})"
     end
 
@@ -70,7 +73,8 @@ module C2CR
     end
 
     def self.visit_incomplete_array(type)
-      element_type = Type.to_crystal(type.array_element_type.canonical_type)
+      #element_type = Type.to_crystal(type.array_element_type.canonical_type)
+      element_type = Type.to_crystal(type.array_element_type)
       "#{element_type}*"
     end
   end
