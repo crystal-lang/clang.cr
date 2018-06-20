@@ -60,6 +60,10 @@ module Clang
       end
     end
 
+    def suspend
+      LibC.clang_suspendTranslationUnit(self)
+    end
+
     def to_unsafe
       @unit
     end

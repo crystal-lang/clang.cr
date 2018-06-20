@@ -1,5 +1,5 @@
 module Clang
-  enum CursorKind
+  enum CursorKind : UInt32
     UnexposedDecl                 = 1
     StructDecl                    = 2
     UnionDecl                     = 3
@@ -263,6 +263,14 @@ module Clang
 
     def unexposed?
       LibC.clang_isUnexposed(self) == 1
+    end
+
+    def spelling
+      Clang.string LibC.clang_getCursorKindSpelling(self)
+    end
+
+    def to_unsafe
+      LibC::CXCursorKind.new(value)
     end
   end
 end

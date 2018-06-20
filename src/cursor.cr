@@ -24,7 +24,7 @@ module Clang
     end
 
     def kind
-      @cursor.kind
+      CursorKind.new(@cursor.kind.value)
     end
 
     def type

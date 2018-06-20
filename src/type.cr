@@ -6,7 +6,7 @@ module Clang
     end
 
     def kind
-      @type.kind
+      TypeKind.new(@type.kind.value)
     end
 
     def spelling

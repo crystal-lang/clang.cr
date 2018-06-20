@@ -1,5 +1,5 @@
 module Clang
-  enum TypeKind
+  enum TypeKind : UInt32
     Invalid = 0
 
     Unexposed = 1
@@ -60,6 +60,10 @@ module Clang
 
     def spelling
       Clang.string(LibC.clang_getTypeKindSpelling(self))
+    end
+
+    def to_unsafe
+      LibC::CXTypeKind.new(value)
     end
   end
 end
