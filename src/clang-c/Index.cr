@@ -29,7 +29,7 @@ lib LibC
     minor : Int
     subminor : Int
   end
-  enum CXCursorExceptionSpecificationKind : UInt
+  enum CXCursor_ExceptionSpecificationKind : UInt
     None = 0
     DynamicNone = 1
     Dynamic = 2
@@ -79,11 +79,11 @@ lib LibC
   fun clang_getRange(CXSourceLocation, CXSourceLocation) : CXSourceRange
   fun clang_equalRanges(CXSourceRange, CXSourceRange) : UInt
   fun clang_Range_isNull(CXSourceRange) : Int
-  fun clang_getExpansionLocation(CXSourceLocation, Void**, UInt*, UInt*, UInt*) : Void
+  fun clang_getExpansionLocation(CXSourceLocation, CXFile*, UInt*, UInt*, UInt*) : Void
   fun clang_getPresumedLocation(CXSourceLocation, CXString*, UInt*, UInt*) : Void
-  fun clang_getInstantiationLocation(CXSourceLocation, Void**, UInt*, UInt*, UInt*) : Void
-  fun clang_getSpellingLocation(CXSourceLocation, Void**, UInt*, UInt*, UInt*) : Void
-  fun clang_getFileLocation(CXSourceLocation, Void**, UInt*, UInt*, UInt*) : Void
+  fun clang_getInstantiationLocation(CXSourceLocation, CXFile*, UInt*, UInt*, UInt*) : Void
+  fun clang_getSpellingLocation(CXSourceLocation, CXFile*, UInt*, UInt*, UInt*) : Void
+  fun clang_getFileLocation(CXSourceLocation, CXFile*, UInt*, UInt*, UInt*) : Void
   fun clang_getRangeStart(CXSourceRange) : CXSourceLocation
   fun clang_getRangeEnd(CXSourceRange) : CXSourceLocation
   struct CXSourceRangeList
@@ -104,13 +104,13 @@ lib LibC
   alias CXDiagnosticSet = Void*
   fun clang_getNumDiagnosticsInSet(CXDiagnosticSet) : UInt
   fun clang_getDiagnosticInSet(CXDiagnosticSet, UInt) : CXDiagnostic
-  enum CXLoadDiagError : UInt
+  enum CXLoadDiag_Error : UInt
     None = 0
     Unknown = 1
     CannotLoad = 2
     InvalidFile = 3
   end
-  fun clang_loadDiagnostics(Char*, CXLoadDiagError*, CXString*) : CXDiagnosticSet
+  fun clang_loadDiagnostics(Char*, CXLoadDiag_Error*, CXString*) : CXDiagnosticSet
   fun clang_disposeDiagnosticSet(CXDiagnosticSet) : Void
   fun clang_getChildDiagnostics(CXDiagnostic) : CXDiagnosticSet
   fun clang_getNumDiagnostics(CXTranslationUnit) : UInt
@@ -141,8 +141,8 @@ lib LibC
   fun clang_getTranslationUnitSpelling(CXTranslationUnit) : CXString
   fun clang_createTranslationUnitFromSourceFile(CXIndex, Char*, Int, Char**, UInt, CXUnsavedFile*) : CXTranslationUnit
   fun clang_createTranslationUnit(CXIndex, Char*) : CXTranslationUnit
-  fun clang_createTranslationUnit2(CXIndex, Char*, CXTranslationUnitImpl**) : CXErrorCode
-  enum CXTranslationUnitFlags : UInt
+  fun clang_createTranslationUnit2(CXIndex, Char*, CXTranslationUnit*) : CXErrorCode
+  enum CXTranslationUnit_Flags : UInt
     None = 0
     DetailedPreprocessingRecord = 1
     Incomplete = 2
@@ -158,9 +158,9 @@ lib LibC
   end
   fun clang_defaultEditingTranslationUnitOptions() : UInt
   fun clang_parseTranslationUnit(CXIndex, Char*, Char**, Int, CXUnsavedFile*, UInt, UInt) : CXTranslationUnit
-  fun clang_parseTranslationUnit2(CXIndex, Char*, Char**, Int, CXUnsavedFile*, UInt, UInt, CXTranslationUnitImpl**) : CXErrorCode
-  fun clang_parseTranslationUnit2FullArgv(CXIndex, Char*, Char**, Int, CXUnsavedFile*, UInt, UInt, CXTranslationUnitImpl**) : CXErrorCode
-  enum CXSaveTranslationUnitFlags : UInt
+  fun clang_parseTranslationUnit2(CXIndex, Char*, Char**, Int, CXUnsavedFile*, UInt, UInt, CXTranslationUnit*) : CXErrorCode
+  fun clang_parseTranslationUnit2FullArgv(CXIndex, Char*, Char**, Int, CXUnsavedFile*, UInt, UInt, CXTranslationUnit*) : CXErrorCode
+  enum CXSaveTranslationUnit_Flags : UInt
     None = 0
   end
   fun clang_defaultSaveOptions(CXTranslationUnit) : UInt
@@ -173,7 +173,7 @@ lib LibC
   fun clang_saveTranslationUnit(CXTranslationUnit, Char*, UInt) : Int
   fun clang_suspendTranslationUnit(CXTranslationUnit) : UInt
   fun clang_disposeTranslationUnit(CXTranslationUnit) : Void
-  enum CXReparseFlags : UInt
+  enum CXReparse_Flags : UInt
     None = 0
   end
   fun clang_defaultReparseOptions(CXTranslationUnit) : UInt
@@ -717,14 +717,14 @@ lib LibC
   fun clang_Type_getCXXRefQualifier(CXType) : CXRefQualifierKind
   fun clang_Cursor_isBitField(CXCursor) : UInt
   fun clang_isVirtualBase(CXCursor) : UInt
-  enum CXCXXAccessSpecifier : UInt
+  enum CX_CXXAccessSpecifier : UInt
     InvalidAccessSpecifier = 0
     Public = 1
     Protected = 2
     Private = 3
   end
-  fun clang_getCXXAccessSpecifier(CXCursor) : CXCXXAccessSpecifier
-  enum CXStorageClass : UInt
+  fun clang_getCXXAccessSpecifier(CXCursor) : CX_CXXAccessSpecifier
+  enum CX_StorageClass : UInt
     Invalid = 0
     None = 1
     Extern = 2
@@ -734,7 +734,7 @@ lib LibC
     Auto = 6
     Register = 7
   end
-  fun clang_Cursor_getStorageClass(CXCursor) : CXStorageClass
+  fun clang_Cursor_getStorageClass(CXCursor) : CX_StorageClass
   fun clang_getNumOverloadedDecls(CXCursor) : UInt
   fun clang_getOverloadedDecl(CXCursor, UInt) : CXCursor
   fun clang_getIBOutletCollectionType(CXCursor) : CXType
@@ -891,7 +891,7 @@ lib LibC
     results : CXCompletionResult*
     num_results : UInt
   end
-  enum CXCodeCompleteFlags : UInt
+  enum CXCodeComplete_Flags : UInt
     Macros = 1
     CodePatterns = 2
     BriefComments = 4
@@ -1178,10 +1178,10 @@ lib LibC
     SuppressWarnings = 8
     SkipParsedBodiesInSession = 16
   end
-  fun clang_indexSourceFile(CXIndexAction, CXClientData, IndexerCallbacks*, UInt, UInt, Char*, Char**, Int, CXUnsavedFile*, UInt, CXTranslationUnitImpl**, UInt) : Int
-  fun clang_indexSourceFileFullArgv(CXIndexAction, CXClientData, IndexerCallbacks*, UInt, UInt, Char*, Char**, Int, CXUnsavedFile*, UInt, CXTranslationUnitImpl**, UInt) : Int
+  fun clang_indexSourceFile(CXIndexAction, CXClientData, IndexerCallbacks*, UInt, UInt, Char*, Char**, Int, CXUnsavedFile*, UInt, CXTranslationUnit*, UInt) : Int
+  fun clang_indexSourceFileFullArgv(CXIndexAction, CXClientData, IndexerCallbacks*, UInt, UInt, Char*, Char**, Int, CXUnsavedFile*, UInt, CXTranslationUnit*, UInt) : Int
   fun clang_indexTranslationUnit(CXIndexAction, CXClientData, IndexerCallbacks*, UInt, UInt, CXTranslationUnit) : Int
-  fun clang_indexLoc_getFileLocation(CXIdxLoc, Void**, Void**, UInt*, UInt*, UInt*) : Void
+  fun clang_indexLoc_getFileLocation(CXIdxLoc, CXIdxClientFile*, CXFile*, UInt*, UInt*, UInt*) : Void
   fun clang_indexLoc_getCXSourceLocation(CXIdxLoc) : CXSourceLocation
   alias CXFieldVisitor = (CXCursor, CXClientData) -> CXVisitorResult
   fun clang_Type_visitFields(CXType, CXFieldVisitor, CXClientData) : UInt

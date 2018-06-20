@@ -2,7 +2,7 @@ require "./token"
 
 module Clang
   class TranslationUnit
-    alias Options = LibC::CXTranslationUnitFlags
+    alias Options = LibC::CXTranslationUnit_Flags
 
     def self.default_options
       Options.new(LibC.clang_defaultEditingTranslationUnitOptions()) |

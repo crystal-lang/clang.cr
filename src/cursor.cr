@@ -8,8 +8,8 @@ module Clang
   alias Availability = LibC::CXLanguageKind
   alias Visibility = LibC::CXLanguageKind
   alias Language = LibC::CXLanguageKind
-  alias AccessSpecifier = LibC::CXCXXAccessSpecifier
-  alias StorageClass = LibC::CXStorageClass
+  alias AccessSpecifier = LibC::CX_CXXAccessSpecifier
+  alias StorageClass = LibC::CX_StorageClass
 
   struct Cursor
     def initialize(@cursor : LibC::CXCursor)
