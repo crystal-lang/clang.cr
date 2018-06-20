@@ -6,10 +6,15 @@ module C2CR
       when "uint16_t" then "UInt16"
       when "uint32_t" then "UInt32"
       when "uint64_t" then "UInt64"
-      when .starts_with?("const ")
-        spelling[6..-1].camelcase
       else
-        spelling.camelcase
+        spelling = spelling[6..-1] if spelling.starts_with?("const ")
+        spelling = spelling.lstrip('_') if spelling.starts_with?('_')
+
+        if spelling[0]?.try(&.ascii_uppercase?)
+          spelling
+        else
+          spelling.camelcase
+        end
       end
     end
   end
