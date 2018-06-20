@@ -22,4 +22,37 @@ module Clang
   ensure
     LibC.clang_disposeString(str) if dispose
   end
+
+  def self.default_c_include_directories(cflags)
+    program = ENV["CC"]? || "cc"
+    args = {"-E", "-", "-v"}
+    default_include_directories(program, args, cflags)
+  end
+
+  def self.default_cxx_include_directories(cflags)
+    program = ENV["CXX"]? || "c++"
+    args = {"-E", "-x", "c++", "-", "-v"}
+    default_include_directories(program, args, cflags)
+  end
+
+  private def self.default_include_directories(program, args, cflags)
+    Process.run(program, args, shell: true, error: io = IO::Memory.new)
+
+    includes = [] of String
+    found_include = false
+
+    io.rewind.to_s.each_line do |line|
+      if line.starts_with?("#include ")
+        found_include = true
+      elsif found_include
+        line = line.lstrip
+        break unless line.starts_with?('.') || line.starts_with?('/')
+        includes << line.chomp
+      end
+    end
+
+    includes.reverse_each do |path|
+      cflags.unshift "-I#{path}"
+    end
+  end
 end
