@@ -23,26 +23,9 @@ tu.cursor.visit_children do |cursor|
 end
 ```
 
-## Samples
+## Applications using clang.cr
 
-See the `samples` folder for some example usages:
-
-- `samples/debug.cr` will print the AST of C or C++ headers as they are parsed;
-- `samples/c2cr.cr` will automatically generate Crystal bindings for a C header.
-
-For example:
-
-```sh
-$ shards build --release
-
-$ bin/c2cr -I/usr/lib/llvm-5.0/include llvm-c/Core.h \
-    --remove-enum-prefix=LLVM --remove-enum-suffix > llvm-c/Core.cr
-
-$ bin/c2cr -I/usr/lib/llvm-5.0/include clang-c/Index.h \
-    --remove-enum-prefix > clang-c/Index.cr
-
-$ bin/c2cr gtk-2.0/gtk/gtkenums.h --remove-enum-prefix > gtk/enums.cr
-```
+[autobind](https://github.com/j8r/crystal-autobind) (previously `c2cr` in this repo) - Automatic C bindings generator for Crystal 
 
 ## Reference
 
