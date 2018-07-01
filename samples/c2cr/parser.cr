@@ -55,7 +55,7 @@ module C2CR
           when .macro_expansion?, .macro_instantiation?, .inclusion_directive?
             # skip
           else
-            puts "WARNING: unexpected #{cursor.kind} child cursor"
+            STDERR.puts "WARNING: unexpected #{cursor.kind} child cursor"
           end
         end
         Clang::ChildVisitResult::Continue
@@ -165,13 +165,18 @@ module C2CR
 
           case t.kind
           when .record?
-            # visit_typedef_struct(cursor, type.named_type.cursor)
-            visit_struct(c, cursor.spelling)
+            case c.kind
+            when .struct_decl?
+              visit_struct(c, cursor.spelling)
+            when .union_decl?
+              visit_union(c, cursor.spelling)
+            else
+              STDERR.puts "WARNING: unexpected #{c.kind} for #{t.kind} within #{cursor.kind} (visit_typedef)"
+            end
           when .enum?
-            # visit_typedef_enum(cursor, type.named_type.cursor)
             visit_enum(c, cursor.spelling)
           else
-            puts "  # WARNING: unexpected #{t.kind} within #{cursor.kind} (visit_typedef)"
+            STDERR.puts "WARNING: unexpected #{t.kind} within #{cursor.kind} (visit_typedef)"
           end
         else
           name = Constant.to_crystal(cursor.spelling)
@@ -181,32 +186,6 @@ module C2CR
         visit_typedef_proc(cursor, children)
       end
     end
-
-    #private def visit_typedef_struct(cursor, c)
-    #  case c.spelling
-    #  when .empty?
-    #    visit_struct(c, cursor.spelling)
-    #  when cursor.spelling
-    #    # skip
-    #  else
-    #    name = Constant.to_crystal(cursor.spelling)
-    #    type = Constant.to_crystal(c.spelling)
-    #    puts "  alias #{name} = #{type}"
-    #  end
-    #end
-
-    #private def visit_typedef_enum(cursor, c)
-    #  case c.spelling
-    #  when .empty?
-    #    visit_enum(c, cursor.spelling)
-    #  when cursor.spelling
-    #    # skip
-    #  else
-    #    name = Constant.to_crystal(cursor.spelling)
-    #    type = Type.to_crystal(c.type)
-    #    puts "  alias #{name} = #{type}"
-    #  end
-    #end
 
     private def visit_typedef_type(cursor, c)
       name = Constant.to_crystal(cursor.spelling)
@@ -249,7 +228,7 @@ module C2CR
                   end
           values << {c.spelling, value}
         else
-          puts "    # WARNING: unexpected #{c.kind} within #{cursor.kind} (visit_enum)"
+          STDERR.puts "WARNING: unexpected #{c.kind} within #{cursor.kind} (visit_enum)"
         end
         Clang::ChildVisitResult::Continue
       end
@@ -348,10 +327,10 @@ module C2CR
             if c.type.kind.record?
               # skip
             else
-              p [:TODO, :inner_struct, c]
+              STDERR.puts [:TODO, :inner_struct, c].inspect
             end
           else
-            str.puts "WARNING: unexpected #{c.kind} within #{cursor.kind} (visit_struct)"
+            STDERR.puts "WARNING: unexpected #{c.kind} within #{cursor.kind} (visit_struct)"
           end
           Clang::ChildVisitResult::Continue
         end
@@ -366,9 +345,23 @@ module C2CR
       end
     end
 
-    def visit_union(cursor)
-      #p [:union, cursor.spelling]
-      # TODO: visit_union
+    def visit_union(cursor, spelling = cursor.spelling)
+      # anonymous? already processed?
+      return if spelling.empty?
+
+      puts "  union #{Constant.to_crystal(spelling)}"
+
+      cursor.visit_children do |c|
+        case c.kind
+        when .field_decl?
+          puts "    #{c.spelling.underscore} : #{Type.to_crystal(c.type)}"
+        else
+          STDERR.puts "WARNING: unexpected #{c.kind} within #{cursor.kind} (visit_union)"
+        end
+        Clang::ChildVisitResult::Continue
+      end
+
+      puts "  end"
     end
 
     def visit_function(cursor)
