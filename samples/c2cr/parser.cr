@@ -66,7 +66,7 @@ module C2CR
       # TODO: analyze the tokens to build the constant value (e.g. type cast, ...)
       # TODO: parse the result String to verify it is valid Crystal
 
-      value = String.build do |str|
+      original = String.build do |str|
         previous = nil
         translation_unit.tokenize(cursor.extent, skip: 1) do |token|
           case token.kind
@@ -86,20 +86,22 @@ module C2CR
         end
       end
 
-      if value.starts_with?('(') && value.ends_with?(')')
-        value = value[1..-2]
+      if original.starts_with?('(') && original.ends_with?(')')
+        value = original[1..-2]
+      else
+        value = original
       end
 
       if valid_crystal_literal?(value)
         puts "  #{cursor.spelling} = #{value}"
       else
-        puts "  # #{cursor.spelling} = #{value}"
+        puts "  # #{cursor.spelling} = #{original.gsub('\n', "\r#  ")}"
       end
     end
 
     private def valid_crystal_literal?(value)
       case value
-      when /^[-+]?(UInt|Long|ULong|LongLong|ULongLong)\.new\([+-]?[e0-9a-fA-F]+\)$/,
+      when /^[-+]?(UInt|Long|ULong|LongLong|ULongLong)\.new\([+-]?[e0-9a-fA-F]+\)$/
         true
       when /^0x[e0-9a-fA-F]+$/
         true
