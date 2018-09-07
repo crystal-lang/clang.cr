@@ -256,7 +256,7 @@ module Clang
     end
 
     def definition
-      Cursor.new(LibC.clang_getCursorReferenced(self))
+      Cursor.new(LibC.clang_getCursorDefinition(self))
     end
 
     def canonical_cursor
