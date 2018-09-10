@@ -47,7 +47,7 @@ module Clang
       elsif found_include
         line = line.lstrip
         break unless line.starts_with?('.') || line.starts_with?('/')
-        includes << line.chomp
+        includes << line.split(" (", 2)[0].chomp
       end
     end
 
