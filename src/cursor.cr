@@ -4,11 +4,11 @@ require "./eval_result"
 
 module Clang
   alias ChildVisitResult = LibC::CXChildVisitResult
-  alias Linkage = LibC::CXLanguageKind
-  alias Availability = LibC::CXLanguageKind
-  alias Visibility = LibC::CXLanguageKind
+  alias Linkage = LibC::CXLinkageKind
+  alias Availability = LibC::CXAvailabilityKind
+  alias Visibility = LibC::CXVisibilityKind
   alias Language = LibC::CXLanguageKind
-  alias AccessSpecifier = LibC::CX_CXXAccessSpecifier
+  alias CXXAccessSpecifier = LibC::CX_CXXAccessSpecifier
   alias StorageClass = LibC::CX_StorageClass
 
   struct Cursor
