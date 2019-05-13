@@ -1,7 +1,7 @@
 lib LibC
   # LLVM_CLANG_C_INDEX_H = 
   CINDEX_VERSION_MAJOR = 0
-  CINDEX_VERSION_MINOR = 49
+  CINDEX_VERSION_MINOR = 50
   # CINDEX_VERSION_ENCODE = ( major, minor)((( major)*10000)+(( minor)*1))
   # CINDEX_VERSION = CINDEX_VERSION_ENCODE( CINDEX_VERSION_MAJOR, CINDEX_VERSION_MINOR)
   # CINDEX_VERSION_STRINGIZE_ = ( major, minor)
@@ -159,6 +159,8 @@ lib LibC
     KeepGoing = 512
     SingleFileParse = 1024
     LimitSkipFunctionBodiesToPreamble = 2048
+    IncludeAttributedTypes = 4096
+    VisitImplicitAttributes = 8192
   end
   fun clang_defaultEditingTranslationUnitOptions() : UInt
   fun clang_parseTranslationUnit(CXIndex, Char*, Char**, Int, CXUnsavedFile*, UInt, UInt) : CXTranslationUnit
@@ -436,7 +438,25 @@ lib LibC
     VisibilityAttr = 417
     DLLExport = 418
     DLLImport = 419
-    LastAttr = 419
+    NSReturnsRetained = 420
+    NSReturnsNotRetained = 421
+    NSReturnsAutoreleased = 422
+    NSConsumesSelf = 423
+    NSConsumed = 424
+    ObjCException = 425
+    ObjCNSObject = 426
+    ObjCIndependentClass = 427
+    ObjCPreciseLifetime = 428
+    ObjCReturnsInnerPointer = 429
+    ObjCRequiresSuper = 430
+    ObjCRootClass = 431
+    ObjCSubclassingRestricted = 432
+    ObjCExplicitProtocolImpl = 433
+    ObjCDesignatedInitializer = 434
+    ObjCRuntimeVisible = 435
+    ObjCBoxable = 436
+    FlagEnum = 437
+    LastAttr = 437
     PreprocessingDirective = 500
     MacroDefinition = 501
     MacroExpansion = 502
@@ -631,6 +651,21 @@ lib LibC
     OCLEvent = 158
     OCLQueue = 159
     OCLReserveID = 160
+    ObjCObject = 161
+    ObjCTypeParam = 162
+    Attributed = 163
+    OCLIntelSubgroupAVCMcePayload = 164
+    OCLIntelSubgroupAVCImePayload = 165
+    OCLIntelSubgroupAVCRefPayload = 166
+    OCLIntelSubgroupAVCSicPayload = 167
+    OCLIntelSubgroupAVCMceResult = 168
+    OCLIntelSubgroupAVCImeResult = 169
+    OCLIntelSubgroupAVCRefResult = 170
+    OCLIntelSubgroupAVCSicResult = 171
+    OCLIntelSubgroupAVCImeResultSingleRefStreamout = 172
+    OCLIntelSubgroupAVCImeResultDualRefStreamout = 173
+    OCLIntelSubgroupAVCImeSingleRefStreamin = 174
+    OCLIntelSubgroupAVCImeDualRefStreamin = 175
   end
   enum CXCallingConv : UInt
     Default = 0
@@ -650,6 +685,7 @@ lib LibC
     Swift = 13
     PreserveMost = 14
     PreserveAll = 15
+    AArch64VectorCall = 16
     Invalid = 100
     Unexposed = 200
   end
@@ -703,6 +739,11 @@ lib LibC
   fun clang_getExceptionSpecificationType(CXType) : Int
   fun clang_getNumArgTypes(CXType) : Int
   fun clang_getArgType(CXType, UInt) : CXType
+  fun clang_Type_getObjCObjectBaseType(CXType) : CXType
+  fun clang_Type_getNumObjCProtocolRefs(CXType) : UInt
+  fun clang_Type_getObjCProtocolDecl(CXType, UInt) : CXCursor
+  fun clang_Type_getNumObjCTypeArgs(CXType) : UInt
+  fun clang_Type_getObjCTypeArg(CXType, UInt) : CXType
   fun clang_isFunctionTypeVariadic(CXType) : UInt
   fun clang_getCursorResultType(CXCursor) : CXType
   fun clang_getCursorExceptionSpecificationType(CXCursor) : Int
@@ -713,6 +754,13 @@ lib LibC
   fun clang_getArraySize(CXType) : LongLong
   fun clang_Type_getNamedType(CXType) : CXType
   fun clang_Type_isTransparentTagTypedef(CXType) : UInt
+  enum CXTypeNullabilityKind : UInt
+    NonNull = 0
+    Nullable = 1
+    Unspecified = 2
+    Invalid = 3
+  end
+  fun clang_Type_getNullability(CXType) : CXTypeNullabilityKind
   enum CXTypeLayoutError : Int
     Invalid = -1
     Incomplete = -2
@@ -724,6 +772,7 @@ lib LibC
   fun clang_Type_getClassType(CXType) : CXType
   fun clang_Type_getSizeOf(CXType) : LongLong
   fun clang_Type_getOffsetOf(CXType, Char*) : LongLong
+  fun clang_Type_getModifiedType(CXType) : CXType
   fun clang_Cursor_getOffsetOfField(CXCursor) : LongLong
   fun clang_Cursor_isAnonymous(CXCursor) : UInt
   enum CXRefQualifierKind : UInt
@@ -833,6 +882,8 @@ lib LibC
     Class = 4096
   end
   fun clang_Cursor_getObjCPropertyAttributes(CXCursor, UInt) : UInt
+  fun clang_Cursor_getObjCPropertyGetterName(CXCursor) : CXString
+  fun clang_Cursor_getObjCPropertySetterName(CXCursor) : CXString
   enum CXObjCDeclQualifierKind : UInt
     None = 0
     In = 1
@@ -981,7 +1032,8 @@ lib LibC
     ObjCSelectorName = 524288
     MacroName = 1048576
     NaturalLanguage = 2097152
-    Unknown = 4194303
+    IncludedFile = 4194304
+    Unknown = 8388607
   end
   fun clang_defaultCodeCompleteOptions() : UInt
   fun clang_codeCompleteAt(CXTranslationUnit, Char*, UInt, UInt, CXUnsavedFile*, UInt, UInt) : CXCodeCompleteResults*
@@ -1220,14 +1272,14 @@ lib LibC
     role : CXSymbolRole
   end
   struct IndexerCallbacks
-    abort_query : (Void*, Void*) -> Int*
-    diagnostic : (Void*, Void*, Void*) -> Void*
-    entered_main_file : (Void*, Void*, Void*) -> Void**
-    pp_included_file : (Void*, CXIdxIncludedFileInfo*) -> Void**
-    imported_ast_file : (Void*, CXIdxImportedASTFileInfo*) -> Void**
-    started_translation_unit : (Void*, Void*) -> Void**
-    index_declaration : (Void*, CXIdxDeclInfo*) -> Void*
-    index_entity_reference : (Void*, CXIdxEntityRefInfo*) -> Void*
+    abort_query : (CXClientData, Void*) -> Int*
+    diagnostic : (CXClientData, CXDiagnosticSet, Void*) -> Void*
+    entered_main_file : (CXClientData, CXFile, Void*) -> CXIdxClientFile*
+    pp_included_file : (CXClientData, CXIdxIncludedFileInfo*) -> CXIdxClientFile*
+    imported_ast_file : (CXClientData, CXIdxImportedASTFileInfo*) -> CXIdxClientASTFile*
+    started_translation_unit : (CXClientData, Void*) -> CXIdxClientContainer*
+    index_declaration : (CXClientData, CXIdxDeclInfo*) -> Void*
+    index_entity_reference : (CXClientData, CXIdxEntityRefInfo*) -> Void*
   end
   fun clang_index_isEntityObjCContainerKind(CXIdxEntityKind) : Int
   fun clang_index_getObjCContainerDeclInfo(CXIdxDeclInfo*) : CXIdxObjCContainerDeclInfo*

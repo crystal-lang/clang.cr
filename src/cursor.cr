@@ -285,6 +285,16 @@ module Clang
       LibC.clang_Cursor_getObjCPropertyAttributes(self, 0)
     end
 
+    # NOTE: since clang 8+
+    def objc_property_getter_name
+      Clang.string LibC.clang_Cursor_getObjCPropertyGetterName(self)
+    end
+
+    # NOTE: since clang 8+
+    def objc_property_setter_name
+      Clang.string LibC.clang_Cursor_getObjCPropertySetterName(self)
+    end
+
     # def comment_range
     #   SourceRange.new(LibC.clang_Cursor_getCommentRange(self))
     # end

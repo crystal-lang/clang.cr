@@ -2,6 +2,9 @@ require "./type_kind"
 
 module Clang
   struct Type
+    # NOTE: since clang 8+
+    alias NullabilityKind = LibC::CXTypeNullabilityKind
+
     def initialize(@type : LibC::CXType)
     end
 
@@ -59,6 +62,25 @@ module Clang
       end
     end
 
+    # NOTE: since clang 8+
+    def objc_object_base_type
+      Type.new(LibC.clang_Type_getObjCObjectBaseType(self))
+    end
+
+    # NOTE: since clang 8+
+    def objc_protocol_declarations
+      Array(Cursor).new(LibC.clang_Type_getNumObjCProtocolRefs(self)) do |i|
+        Cursor.new(LibC.clang_Type_getObjCProtocolDecl(self, i))
+      end
+    end
+
+    # NOTE: since clang 8+
+    def objc_type_args
+      Array(Type).new(LibC.clang_Type_getNumObjCTypeArgs(self)) do |i|
+        Type.new(LibC.clang_Type_getObjCTypeArg(self, i))
+      end
+    end
+
     def variadic?
       # TODO: restrict to FunctionProto, FunctionNoProto
       LibC.clang_isFunctionTypeVariadic(self) == 1
@@ -90,6 +112,11 @@ module Clang
       Type.new(LibC.clang_Type_getNamedType(self))
     end
 
+    # NOTE: since clang 8+
+    def nullability_kind
+      LibC.clang_Type_getNullability(self)
+    end
+
     def align_of
       LibC.clang_Type_getAlignOf(self)
     end
@@ -104,6 +131,11 @@ module Clang
 
     def offset_of(field_name)
       LibC.clang_Type_getOffsetOf(self, field_name)
+    end
+
+    # NOTE: since clang 8+
+    def modified_type
+      Type.new(LibC.clang_Type_getModifiedType(self))
     end
 
     def template_arguments
