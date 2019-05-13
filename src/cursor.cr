@@ -1,6 +1,7 @@
 require "./cursor_kind"
-require "./platform_availability"
 require "./eval_result"
+require "./platform_availability"
+require "./printing_policy"
 
 module Clang
   alias ChildVisitResult = LibC::CXChildVisitResult
@@ -48,6 +49,11 @@ module Clang
 
     def hash
       LibC.clang_hashCursor(self)
+    end
+
+    # NOTE: since clang 7+
+    def invalid_declaration?
+      LibC.clang_isInvalidDeclaration(self) == 1
     end
 
     def linkage
@@ -335,6 +341,14 @@ module Clang
       end
     ensure
       LibC.clang_disposeStringSet(list) if list
+    end
+
+    def printing_policy
+      PrintingPolicy.new(LibC.clang_getCursorPrintingPolicy(self))
+    end
+
+    def pretty_printed(printing_policy : PrintingPolicy)
+      Clang.string(LibC.clang_getCursorPrettyPrinted(self, printing_policy))
     end
 
     def inspect(io)

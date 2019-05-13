@@ -25,6 +25,11 @@ module Clang
       uid
     end
 
+    # NOTE: since clang 7+
+    def try_get_real_path_name
+      Clang.string(LibC.clang_File_tryGetRealPathName(self))
+    end
+
     def to_unsafe
       @file
     end

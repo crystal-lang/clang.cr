@@ -60,6 +60,11 @@ module Clang
       end
     end
 
+    # NOTE: since clang 7+
+    def get_token(location : SourceLocation)
+      Token.new(LibC.clang_getToken(self, location))
+    end
+
     def suspend
       LibC.clang_suspendTranslationUnit(self)
     end

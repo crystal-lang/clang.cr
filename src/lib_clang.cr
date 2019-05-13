@@ -4,10 +4,10 @@ require "./clang-c/*"
 lib LibC
   LLVM_CONFIG = {{
                   `[ -n "$LLVM_CONFIG" ] && command -v "$LLVM_CONFIG" || \
+                   command -v llvm-config-7 || \
                    command -v llvm-config-6.0 || command -v llvm-config60 || \
                    command -v llvm-config-5.0 || command -v llvm-config50 || \
                    command -v llvm-config-4.0 || command -v llvm-config40 || \
-                   command -v llvm-config-3.9 || command -v llvm-config39 || \
                    command -v llvm-config
                   `.chomp.stringify
                 }}

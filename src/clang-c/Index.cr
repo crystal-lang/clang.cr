@@ -1,11 +1,11 @@
 lib LibC
   # LLVM_CLANG_C_INDEX_H = 
   CINDEX_VERSION_MAJOR = 0
-  CINDEX_VERSION_MINOR = 45
-  # CINDEX_VERSION_ENCODE =  major, minor)((( major)*10000)+(( minor)*1)
+  CINDEX_VERSION_MINOR = 49
+  # CINDEX_VERSION_ENCODE = ( major, minor)((( major)*10000)+(( minor)*1))
   # CINDEX_VERSION = CINDEX_VERSION_ENCODE( CINDEX_VERSION_MAJOR, CINDEX_VERSION_MINOR)
-  # CINDEX_VERSION_STRINGIZE_ =  major, minor
-  # CINDEX_VERSION_STRINGIZE =  major, minor) CINDEX_VERSION_STRINGIZE_( major, minor
+  # CINDEX_VERSION_STRINGIZE_ = ( major, minor)
+  # CINDEX_VERSION_STRINGIZE = ( major, minor) CINDEX_VERSION_STRINGIZE_( major, minor)
   # CINDEX_VERSION_STRING = CINDEX_VERSION_STRINGIZE( CINDEX_VERSION_MAJOR, CINDEX_VERSION_MINOR)
   alias CXIndex = Void*
   type CXTargetInfoImpl = Void
@@ -62,6 +62,7 @@ lib LibC
   fun clang_getFile(CXTranslationUnit, Char*) : CXFile
   fun clang_getFileContents(CXTranslationUnit, CXFile, SizeT*) : Char*
   fun clang_File_isEqual(CXFile, CXFile) : Int
+  fun clang_File_tryGetRealPathName(CXFile) : CXString
   struct CXSourceLocation
     ptr_data : StaticArray(Void*, 2)
     int_data : UInt
@@ -157,6 +158,7 @@ lib LibC
     CreatePreambleOnFirstParse = 256
     KeepGoing = 512
     SingleFileParse = 1024
+    LimitSkipFunctionBodiesToPreamble = 2048
   end
   fun clang_defaultEditingTranslationUnitOptions() : UInt
   fun clang_parseTranslationUnit(CXIndex, Char*, Char**, Int, CXUnsavedFile*, UInt, UInt) : CXTranslationUnit
@@ -327,7 +329,8 @@ lib LibC
     ObjCSelfExpr = 146
     OMPArraySectionExpr = 147
     ObjCAvailabilityCheckExpr = 148
-    LastExpr = 148
+    FixedPointLiteral = 149
+    LastExpr = 149
     FirstStmt = 200
     UnexposedStmt = 200
     LabelStmt = 201
@@ -461,6 +464,7 @@ lib LibC
   fun clang_hashCursor(CXCursor) : UInt
   fun clang_getCursorKind(CXCursor) : CXCursorKind
   fun clang_isDeclaration(CXCursorKind) : UInt
+  fun clang_isInvalidDeclaration(CXCursor) : UInt
   fun clang_isReference(CXCursorKind) : UInt
   fun clang_isExpression(CXCursorKind) : UInt
   fun clang_isStatement(CXCursorKind) : UInt
@@ -558,8 +562,14 @@ lib LibC
     Float128 = 30
     Half = 31
     Float16 = 32
+    ShortAccum = 33
+    Accum = 34
+    LongAccum = 35
+    UShortAccum = 36
+    UAccum = 37
+    ULongAccum = 38
     FirstBuiltin = 2
-    LastBuiltin = 32
+    LastBuiltin = 38
     Complex = 100
     Pointer = 101
     BlockPointer = 102
@@ -763,6 +773,41 @@ lib LibC
   fun clang_constructUSR_ObjCProperty(Char*, CXString) : CXString
   fun clang_getCursorSpelling(CXCursor) : CXString
   fun clang_Cursor_getSpellingNameRange(CXCursor, UInt, UInt) : CXSourceRange
+  alias CXPrintingPolicy = Void*
+  enum CXPrintingPolicyProperty : UInt
+    Indentation = 0
+    SuppressSpecifiers = 1
+    SuppressTagKeyword = 2
+    IncludeTagDefinition = 3
+    SuppressScope = 4
+    SuppressUnwrittenScope = 5
+    SuppressInitializers = 6
+    ConstantArraySizeAsWritten = 7
+    AnonymousTagLocations = 8
+    SuppressStrongLifetime = 9
+    SuppressLifetimeQualifiers = 10
+    SuppressTemplateArgsInCXXConstructors = 11
+    Bool = 12
+    Restrict = 13
+    Alignof = 14
+    UnderscoreAlignof = 15
+    UseVoidForZeroParams = 16
+    TerseOutput = 17
+    PolishForDeclaration = 18
+    Half = 19
+    MSWChar = 20
+    IncludeNewlines = 21
+    MSVCFormatting = 22
+    ConstantsAsWritten = 23
+    SuppressImplicitBase = 24
+    FullyQualifiedName = 25
+    LastProperty = 25
+  end
+  fun clang_PrintingPolicy_getProperty(CXPrintingPolicy, CXPrintingPolicyProperty) : UInt
+  fun clang_PrintingPolicy_setProperty(CXPrintingPolicy, CXPrintingPolicyProperty, UInt) : Void
+  fun clang_getCursorPrintingPolicy(CXCursor) : CXPrintingPolicy
+  fun clang_PrintingPolicy_dispose(CXPrintingPolicy) : Void
+  fun clang_getCursorPrettyPrinted(CXCursor, CXPrintingPolicy) : CXString
   fun clang_getCursorDisplayName(CXCursor) : CXString
   fun clang_getCursorReferenced(CXCursor) : CXCursor
   fun clang_getCursorDefinition(CXCursor) : CXCursor
@@ -848,6 +893,7 @@ lib LibC
     int_data : StaticArray(UInt, 4)
     ptr_data : Void*
   end
+  fun clang_getToken(CXTranslationUnit, CXSourceLocation) : CXToken*
   fun clang_getTokenKind(CXToken) : CXTokenKind
   fun clang_getTokenSpelling(CXTranslationUnit, CXToken) : CXString
   fun clang_getTokenLocation(CXTranslationUnit, CXToken) : CXSourceLocation
@@ -902,10 +948,14 @@ lib LibC
     results : CXCompletionResult*
     num_results : UInt
   end
+  fun clang_getCompletionNumFixIts(CXCodeCompleteResults*, UInt) : UInt
+  fun clang_getCompletionFixIt(CXCodeCompleteResults*, UInt, UInt, CXSourceRange*) : CXString
   enum CXCodeComplete_Flags : UInt
-    Macros = 1
-    CodePatterns = 2
-    BriefComments = 4
+    IncludeMacros = 1
+    IncludeCodePatterns = 2
+    IncludeBriefComments = 4
+    SkipPreamble = 8
+    IncludeCompletionsWithFixIts = 16
   end
   enum CXCompletionContext : UInt
     Unexposed = 0
@@ -1148,6 +1198,18 @@ lib LibC
     Direct = 1
     Implicit = 2
   end
+  enum CXSymbolRole : UInt
+    None = 0
+    Declaration = 1
+    Definition = 2
+    Reference = 4
+    Read = 8
+    Write = 16
+    Call = 32
+    Dynamic = 64
+    AddressOf = 128
+    Implicit = 256
+  end
   struct CXIdxEntityRefInfo
     kind : CXIdxEntityRefKind
     cursor : CXCursor
@@ -1155,6 +1217,7 @@ lib LibC
     referenced_entity : CXIdxEntityInfo*
     parent_entity : CXIdxEntityInfo*
     container : CXIdxContainerInfo*
+    role : CXSymbolRole
   end
   struct IndexerCallbacks
     abort_query : (Void*, Void*) -> Int*

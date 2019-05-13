@@ -2,7 +2,7 @@
 
 CRYSTAL = crystal
 CRFLAGS = --release
-LLVM_INCLUDE = /usr/lib/llvm-6.0/include
+LLVM_INCLUDE = /usr/lib/llvm-7/include
 
 all: bin/c2cr
 
