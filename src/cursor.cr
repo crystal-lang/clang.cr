@@ -284,11 +284,15 @@ module Clang
     # end
 
     def raw_comment_text
-      Clang.string(LibC.clang_Cursor_getRawCommentText(self))
+      if (ptr = LibC.clang_Cursor_getRawCommentText(self)) && ptr.data
+        Clang.string(ptr)
+      end
     end
 
     def brief_comment_text
-      Clang.string(LibC.clang_Cursor_getBriefCommentText(self))
+      if (ptr = LibC.clang_Cursor_getBriefCommentText(self)) && ptr.data
+        Clang.string(ptr)
+      end
     end
 
     def objc_decl_qualifiers
