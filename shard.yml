@@ -4,6 +4,8 @@ version: 0.3.0
 authors:
   - Julien Portalier <julien@portalier.com>
 
+crystal: "*"
+
 description: |
   Bindings for libclang
 
