@@ -20,10 +20,19 @@ module C2CR
       when .double? then "Double"
       when .long_double? then "LongDouble"
       when .pointer? then visit_pointer(type)
-      when .enum?, .record?
+      when .enum?
         spelling = type.cursor.spelling
         spelling = type.spelling if type.cursor.spelling.empty?
         Constant.to_crystal(spelling)
+      when .record?
+          case type.cursor.kind
+            when .union_decl?
+                visit_record(type)
+            else
+                spelling = type.cursor.spelling
+                spelling = type.spelling if type.cursor.spelling.empty?
+                Constant.to_crystal(spelling)
+            end
       when .elaborated? then to_crystal(type.named_type)
       when .typedef?
         if (spelling = type.spelling).starts_with?('_')
@@ -48,6 +57,10 @@ module C2CR
       #pointee = to_crystal(type.pointee_type.canonical_type)
       pointee = to_crystal(type.pointee_type)
       "#{pointee}*"
+    end
+
+    def self.visit_record(type)
+        "ANONYMOUS_#{type.cursor.semantic_parent.spelling}"
     end
 
     def self.visit_constant_array(type)
