@@ -321,8 +321,17 @@ module C2CR
           members_count += 1
 
           case c.kind
+          when .union_decl?
+              visit_union_in_struct(c, spelling)
           when .field_decl?
-            str.puts "    #{c.spelling.underscore} : #{Type.to_crystal(c.type)}"
+              field_type = Type.to_crystal(c.type)
+              case field_type.to_s
+              when .starts_with?("ANONYMOUS_")
+                  str.puts "    #{c.spelling.underscore} : #{field_type}_#{c.spelling.underscore}"
+                  puts "  alias #{field_type}_#{c.spelling.underscore} = ANONYMOUS_#{c.type.cursor.semantic_parent.spelling}_#{c.type.cursor.hash}"
+              else
+                  str.puts "    #{c.spelling.underscore} : #{field_type}"
+              end
           when .struct_decl?
             if c.type.kind.record?
               # skip
@@ -343,6 +352,10 @@ module C2CR
       else
         puts definition
       end
+    end
+
+    def visit_union_in_struct(cursor, spelling = cursor.spelling)
+        visit_union(cursor, "ANONYMOUS_#{spelling}_#{cursor.hash}")
     end
 
     def visit_union(cursor, spelling = cursor.spelling)
