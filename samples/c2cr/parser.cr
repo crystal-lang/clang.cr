@@ -163,7 +163,10 @@ module C2CR
           # did the typedef named the anonymous struct? in which case we do
           # process the struct now, or did the struct already have a name? in
           # which case we already processed it:
-          return unless c.spelling.empty?
+          unless c.spelling.empty?
+            visit_typedef_type(cursor, c)
+            return
+          end
 
           case t.kind
           when .record?
