@@ -39,6 +39,15 @@ module Clang
       }, Box.box(block))
     end
 
+    def first_child?
+      cursor = nil
+      visit_children do |child|
+        cursor = child
+        Clang::ChildVisitResult::Break
+      end
+      cursor
+    end
+
     def has_attributes?
       LibC.clang_Cursor_hasAttrs(self) == 1
     end

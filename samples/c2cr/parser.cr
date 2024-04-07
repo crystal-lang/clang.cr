@@ -327,13 +327,13 @@ module C2CR
 
           case c.kind
           when .field_decl?
-            str.puts "    #{c.spelling.underscore} : #{Type.to_crystal(c.type)}"
-          when .struct_decl?
-            if c.type.kind.record?
-              # skip
-            else
-              STDERR.puts [:TODO, :inner_struct, c].inspect
-            end
+            cr_type = visit_field(c, spelling)
+            str.puts "    #{c.spelling.underscore} : #{cr_type}"
+          when .struct_decl?, .union_decl?
+            # we can't declare an anonymous struct or union without a proper
+            # name, we thus skip anonymous declarations (we generate them when
+            # the cursor is a field decl)
+            visit_struct(c) unless c.anonymous?
           else
             STDERR.puts "WARNING: unexpected #{c.kind} within #{cursor.kind} (visit_struct)"
           end
@@ -348,6 +348,32 @@ module C2CR
       else
         puts definition
       end
+    end
+
+    def visit_field(cursor, spelling)
+      if cursor.type.kind.elaborated?
+        c = cursor.first_child?.not_nil!("BUG: elaborated field decl must have one child")
+
+        if c.anonymous?
+          # the field declares a nested anonymous struct or union, we use the
+          # struct name + the field name to generate a spelling, which allows us
+          # to generate a named declaration:
+          spelling = "#{Constant.to_crystal(spelling)}_#{cursor.spelling}"
+
+          case c.kind
+          when .struct_decl?
+            visit_struct(c, spelling)
+          when .union_decl?
+            visit_union(c, spelling)
+          else
+            STDERR.puts "WARNING: unexpected #{c.kind} within #{cursor.kind} (visit_elaborated_field_decl)"
+          end
+
+          return spelling
+        end
+      end
+
+      Type.to_crystal(cursor.type)
     end
 
     def visit_union(cursor, spelling = cursor.spelling)
