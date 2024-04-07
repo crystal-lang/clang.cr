@@ -101,13 +101,15 @@ module C2CR
 
     private def valid_crystal_literal?(value)
       case value
-      when /^[-+]?(UInt|Long|ULong|LongLong|ULongLong)\.new\([+-]?[e0-9a-fA-F]+\)$/
+      when /^[-+]?(UInt|Long|ULong|LongLong|ULongLong)\.new\([+-]?[xe0-9a-fA-F]+\)$/
         true
       when /^0x[e0-9a-fA-F]+$/
         true
       when /^[+-]?[e0-9a-fA-F]+$/
         true
       when /^[_A-Z][_A-Za-z0-9]+$/
+        true
+      when /"(.*?[^\\])"/
         true
       else
         false

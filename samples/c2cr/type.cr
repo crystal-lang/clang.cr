@@ -25,12 +25,7 @@ module C2CR
         spelling = type.spelling if type.cursor.spelling.empty?
         Constant.to_crystal(spelling)
       when .elaborated? then to_crystal(type.named_type)
-      when .typedef?
-        if (spelling = type.spelling).starts_with?('_')
-          to_crystal(type.canonical_type)
-        else
-          Constant.to_crystal(spelling)
-        end
+      when .typedef? then visit_typedef(type)
       when .constant_array? then visit_constant_array(type)
       #when .vector? then visit_vector(type)
       when .incomplete_array? then visit_incomplete_array(type)
@@ -41,6 +36,20 @@ module C2CR
       when .unexposed? then to_crystal(type.canonical_type)
       else
         raise "unsupported C type: #{type}"
+      end
+    end
+
+    def self.visit_typedef(type)
+      case type.canonical_type.kind
+      when .bool?, .char_u?, .u_char?, .char16?, .u_short?, .char32?, .u_int?, .u_long?, .u_long_long?, .w_char?, .char_s?, .s_char?, .short?, .int?, .long?, .long_long?, .float?, .double?, .long_double?
+        # skips typedefs to basic primitive types
+        to_crystal(type.canonical_type)
+      else
+        if (spelling = type.spelling).starts_with?('_')
+          to_crystal(type.canonical_type)
+        else
+          Constant.to_crystal(spelling)
+        end
       end
     end
 
