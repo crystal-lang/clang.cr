@@ -25,6 +25,7 @@ lib LibC
     Bold = 1
     Monospaced = 2
     Emphasized = 3
+    Anchor = 4
   end
   enum CXCommentParamPassDirection : UInt
     In = 0

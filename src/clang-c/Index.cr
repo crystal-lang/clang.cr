@@ -1,7 +1,7 @@
 lib LibC
   # LLVM_CLANG_C_INDEX_H = 
   CINDEX_VERSION_MAJOR = 0
-  CINDEX_VERSION_MINOR = 50
+  CINDEX_VERSION_MINOR = 61
   # CINDEX_VERSION_ENCODE = ( major, minor)((( major)*10000)+(( minor)*1))
   # CINDEX_VERSION = CINDEX_VERSION_ENCODE( CINDEX_VERSION_MAJOR, CINDEX_VERSION_MINOR)
   # CINDEX_VERSION_STRINGIZE_ = ( major, minor)
@@ -39,6 +39,7 @@ lib LibC
     Unevaluated = 6
     Uninstantiated = 7
     Unparsed = 8
+    NoThrow = 9
   end
   fun clang_createIndex(Int, Int) : CXIndex
   fun clang_disposeIndex(CXIndex) : Void
@@ -161,6 +162,8 @@ lib LibC
     LimitSkipFunctionBodiesToPreamble = 2048
     IncludeAttributedTypes = 4096
     VisitImplicitAttributes = 8192
+    IgnoreNonErrorsFromIncludedFiles = 16384
+    RetainExcludedConditionalBlocks = 32768
   end
   fun clang_defaultEditingTranslationUnitOptions() : UInt
   fun clang_parseTranslationUnit(CXIndex, Char*, Char**, Int, CXUnsavedFile*, UInt, UInt) : CXTranslationUnit
@@ -332,7 +335,10 @@ lib LibC
     OMPArraySectionExpr = 147
     ObjCAvailabilityCheckExpr = 148
     FixedPointLiteral = 149
-    LastExpr = 149
+    OMPArrayShapingExpr = 150
+    OMPIteratorExpr = 151
+    CXXAddrspaceCastExpr = 152
+    LastExpr = 152
     FirstStmt = 200
     UnexposedStmt = 200
     LabelStmt = 201
@@ -415,7 +421,15 @@ lib LibC
     OMPTargetTeamsDistributeParallelForDirective = 277
     OMPTargetTeamsDistributeParallelForSimdDirective = 278
     OMPTargetTeamsDistributeSimdDirective = 279
-    LastStmt = 279
+    BuiltinBitCastExpr = 280
+    OMPMasterTaskLoopDirective = 281
+    OMPParallelMasterTaskLoopDirective = 282
+    OMPMasterTaskLoopSimdDirective = 283
+    OMPParallelMasterTaskLoopSimdDirective = 284
+    OMPParallelMasterDirective = 285
+    OMPDepobjDirective = 286
+    OMPScanDirective = 287
+    LastStmt = 287
     TranslationUnit = 300
     FirstAttr = 400
     UnexposedAttr = 400
@@ -456,7 +470,11 @@ lib LibC
     ObjCRuntimeVisible = 435
     ObjCBoxable = 436
     FlagEnum = 437
-    LastAttr = 437
+    ConvergentAttr = 438
+    WarnUnusedAttr = 439
+    WarnUnusedResultAttr = 440
+    AlignedAttr = 441
+    LastAttr = 441
     PreprocessingDirective = 500
     MacroDefinition = 501
     MacroExpansion = 502
@@ -520,6 +538,9 @@ lib LibC
   end
   fun clang_getCursorPlatformAvailability(CXCursor, Int*, CXString*, Int*, CXString*, CXPlatformAvailability*, Int) : Int
   fun clang_disposeCXPlatformAvailability(CXPlatformAvailability*) : Void
+  fun clang_Cursor_getVarDeclInitializer(CXCursor) : CXCursor
+  fun clang_Cursor_hasVarDeclGlobalStorage(CXCursor) : Int
+  fun clang_Cursor_hasVarDeclExternalStorage(CXCursor) : Int
   enum CXLanguageKind : UInt
     Invalid = 0
     C = 1
@@ -588,8 +609,9 @@ lib LibC
     UShortAccum = 36
     UAccum = 37
     ULongAccum = 38
+    BFloat16 = 39
     FirstBuiltin = 2
-    LastBuiltin = 38
+    LastBuiltin = 39
     Complex = 100
     Pointer = 101
     BlockPointer = 102
@@ -666,6 +688,8 @@ lib LibC
     OCLIntelSubgroupAVCImeResultDualRefStreamout = 173
     OCLIntelSubgroupAVCImeSingleRefStreamin = 174
     OCLIntelSubgroupAVCImeDualRefStreamin = 175
+    ExtVector = 176
+    Atomic = 177
   end
   enum CXCallingConv : UInt
     Default = 0
@@ -759,6 +783,7 @@ lib LibC
     Nullable = 1
     Unspecified = 2
     Invalid = 3
+    NullableResult = 4
   end
   fun clang_Type_getNullability(CXType) : CXTypeNullabilityKind
   enum CXTypeLayoutError : Int
@@ -767,14 +792,18 @@ lib LibC
     Dependent = -3
     NotConstantSize = -4
     InvalidFieldName = -5
+    Undeduced = -6
   end
   fun clang_Type_getAlignOf(CXType) : LongLong
   fun clang_Type_getClassType(CXType) : CXType
   fun clang_Type_getSizeOf(CXType) : LongLong
   fun clang_Type_getOffsetOf(CXType, Char*) : LongLong
   fun clang_Type_getModifiedType(CXType) : CXType
+  fun clang_Type_getValueType(CXType) : CXType
   fun clang_Cursor_getOffsetOfField(CXCursor) : LongLong
   fun clang_Cursor_isAnonymous(CXCursor) : UInt
+  fun clang_Cursor_isAnonymousRecordDecl(CXCursor) : UInt
+  fun clang_Cursor_isInlineNamespace(CXCursor) : UInt
   enum CXRefQualifierKind : UInt
     None = 0
     LValue = 1
