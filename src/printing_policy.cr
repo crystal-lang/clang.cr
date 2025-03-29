@@ -3,7 +3,7 @@ module Clang
   class PrintingPolicy
     alias Property = LibC::CXPrintingPolicyProperty
 
-    def initialize(@printing_policy = LibC::CXPrintingPolicy)
+    def initialize(@printing_policy : LibC::CXPrintingPolicy)
     end
 
     def finalize
