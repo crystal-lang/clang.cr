@@ -12,7 +12,7 @@ module C2CR
       when "int64_t" then "Int64"
       else
         spelling = spelling[6..-1] if spelling.starts_with?("const ")
-        spelling = spelling.lstrip('_') if spelling.starts_with?('_')
+        spelling = "UNDERSCORE#{spelling}" if spelling.starts_with?('_')
 
         if spelling[0]?.try(&.ascii_uppercase?)
           spelling

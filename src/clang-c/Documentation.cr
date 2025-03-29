@@ -65,4 +65,10 @@ lib LibC
   fun clang_HTMLTagComment_getAsString(CXComment) : CXString
   fun clang_FullComment_getAsHTML(CXComment) : CXString
   fun clang_FullComment_getAsXML(CXComment) : CXString
+  type CXAPISetImpl = Void
+  alias CXAPISet = CXAPISetImpl*
+  fun clang_createAPISet(CXTranslationUnit, CXAPISet*) : CXErrorCode
+  fun clang_disposeAPISet(CXAPISet) : Void
+  fun clang_getSymbolGraphForUSR(Char*, CXAPISet) : CXString
+  fun clang_getSymbolGraphForCursor(CXCursor) : CXString
 end

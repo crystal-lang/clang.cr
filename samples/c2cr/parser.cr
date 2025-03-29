@@ -185,7 +185,8 @@ module C2CR
           end
         else
           name = Constant.to_crystal(cursor.spelling)
-          puts "  alias #{name} = #{Type.to_crystal(type)}"
+          crystal_type = Type.to_crystal(type)
+          puts "  alias #{name} = #{crystal_type}" unless name == crystal_type
         end
       else
         visit_typedef_proc(cursor, children)
@@ -195,7 +196,7 @@ module C2CR
     private def visit_typedef_type(cursor, c)
       name = Constant.to_crystal(cursor.spelling)
       type = Type.to_crystal(c.type.canonical_type)
-      puts "  alias #{name} = #{type}"
+      puts "  alias #{name} = #{type}" unless name == type
     end
 
     private def visit_typedef_proc(cursor, children)
@@ -318,6 +319,7 @@ module C2CR
 
     def visit_struct(cursor, spelling = cursor.spelling)
       members_count = 0
+      tmp = 0
 
       definition = String.build do |str|
         str.puts "  struct #{Constant.to_crystal(spelling)}"
@@ -328,7 +330,11 @@ module C2CR
           case c.kind
           when .field_decl?
             cr_type = visit_field(c, spelling)
-            str.puts "    #{c.spelling.underscore} : #{cr_type}"
+            if c.spelling.blank?
+              str.puts "    __unamed_member_#{tmp += 1} : #{cr_type}"
+            else
+              str.puts "    #{c.spelling.underscore} : #{cr_type}"
+            end
           when .struct_decl?, .union_decl?
             # we can't declare an anonymous struct or union without a proper
             # name, we thus skip anonymous declarations (we generate them when

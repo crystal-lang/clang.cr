@@ -1,7 +1,7 @@
 lib LibC
   # LLVM_CLANG_C_INDEX_H = 
   CINDEX_VERSION_MAJOR = 0
-  CINDEX_VERSION_MINOR = 61
+  CINDEX_VERSION_MINOR = 64
   # CINDEX_VERSION_ENCODE = ( major, minor)((( major)*10000)+(( minor)*1))
   # CINDEX_VERSION = CINDEX_VERSION_ENCODE( CINDEX_VERSION_MAJOR, CINDEX_VERSION_MINOR)
   # CINDEX_VERSION_STRINGIZE_ = ( major, minor)
@@ -43,105 +43,42 @@ lib LibC
   end
   fun clang_createIndex(Int, Int) : CXIndex
   fun clang_disposeIndex(CXIndex) : Void
+  enum CXChoice : UInt
+    Default = 0
+    Enabled = 1
+    Disabled = 2
+  end
   enum CXGlobalOptFlags : UInt
     None = 0
     ThreadBackgroundPriorityForIndexing = 1
     ThreadBackgroundPriorityForEditing = 2
     ThreadBackgroundPriorityForAll = 3
   end
+  struct CXIndexOptions
+    size : UInt
+    thread_background_priority_for_indexing : Char
+    thread_background_priority_for_editing : Char
+    exclude_declarations_from_pch : UInt
+    display_diagnostics : UInt
+    store_preambles_in_memory : UInt
+    __unamed_member_1 : UInt
+    preamble_storage_path : Char*
+    invocation_emission_path : Char*
+  end
+  fun clang_createIndexWithOptions(CXIndexOptions*) : CXIndex
   fun clang_CXIndex_setGlobalOptions(CXIndex, UInt) : Void
   fun clang_CXIndex_getGlobalOptions(CXIndex) : UInt
   fun clang_CXIndex_setInvocationEmissionPathOption(CXIndex, Char*) : Void
-  alias CXFile = Void*
-  fun clang_getFileName(CXFile) : CXString
-  fun clang_getFileTime(CXFile) : TimeT
-  struct CXFileUniqueID
-    data : StaticArray(ULongLong, 3)
-  end
-  fun clang_getFileUniqueID(CXFile, CXFileUniqueID*) : Int
   fun clang_isFileMultipleIncludeGuarded(CXTranslationUnit, CXFile) : UInt
   fun clang_getFile(CXTranslationUnit, Char*) : CXFile
-  fun clang_getFileContents(CXTranslationUnit, CXFile, SizeT*) : Char*
-  fun clang_File_isEqual(CXFile, CXFile) : Int
-  fun clang_File_tryGetRealPathName(CXFile) : CXString
-  struct CXSourceLocation
-    ptr_data : StaticArray(Void*, 2)
-    int_data : UInt
-  end
-  struct CXSourceRange
-    ptr_data : StaticArray(Void*, 2)
-    begin_int_data : UInt
-    end_int_data : UInt
-  end
-  fun clang_getNullLocation() : CXSourceLocation
-  fun clang_equalLocations(CXSourceLocation, CXSourceLocation) : UInt
+  fun clang_getFileContents(CXTranslationUnit, CXFile, ULong*) : Char*
   fun clang_getLocation(CXTranslationUnit, CXFile, UInt, UInt) : CXSourceLocation
   fun clang_getLocationForOffset(CXTranslationUnit, CXFile, UInt) : CXSourceLocation
-  fun clang_Location_isInSystemHeader(CXSourceLocation) : Int
-  fun clang_Location_isFromMainFile(CXSourceLocation) : Int
-  fun clang_getNullRange() : CXSourceRange
-  fun clang_getRange(CXSourceLocation, CXSourceLocation) : CXSourceRange
-  fun clang_equalRanges(CXSourceRange, CXSourceRange) : UInt
-  fun clang_Range_isNull(CXSourceRange) : Int
-  fun clang_getExpansionLocation(CXSourceLocation, CXFile*, UInt*, UInt*, UInt*) : Void
-  fun clang_getPresumedLocation(CXSourceLocation, CXString*, UInt*, UInt*) : Void
-  fun clang_getInstantiationLocation(CXSourceLocation, CXFile*, UInt*, UInt*, UInt*) : Void
-  fun clang_getSpellingLocation(CXSourceLocation, CXFile*, UInt*, UInt*, UInt*) : Void
-  fun clang_getFileLocation(CXSourceLocation, CXFile*, UInt*, UInt*, UInt*) : Void
-  fun clang_getRangeStart(CXSourceRange) : CXSourceLocation
-  fun clang_getRangeEnd(CXSourceRange) : CXSourceLocation
-  struct CXSourceRangeList
-    count : UInt
-    ranges : CXSourceRange*
-  end
   fun clang_getSkippedRanges(CXTranslationUnit, CXFile) : CXSourceRangeList*
   fun clang_getAllSkippedRanges(CXTranslationUnit) : CXSourceRangeList*
-  fun clang_disposeSourceRangeList(CXSourceRangeList*) : Void
-  enum CXDiagnosticSeverity : UInt
-    Ignored = 0
-    Note = 1
-    Warning = 2
-    Error = 3
-    Fatal = 4
-  end
-  alias CXDiagnostic = Void*
-  alias CXDiagnosticSet = Void*
-  fun clang_getNumDiagnosticsInSet(CXDiagnosticSet) : UInt
-  fun clang_getDiagnosticInSet(CXDiagnosticSet, UInt) : CXDiagnostic
-  enum CXLoadDiag_Error : UInt
-    None = 0
-    Unknown = 1
-    CannotLoad = 2
-    InvalidFile = 3
-  end
-  fun clang_loadDiagnostics(Char*, CXLoadDiag_Error*, CXString*) : CXDiagnosticSet
-  fun clang_disposeDiagnosticSet(CXDiagnosticSet) : Void
-  fun clang_getChildDiagnostics(CXDiagnostic) : CXDiagnosticSet
   fun clang_getNumDiagnostics(CXTranslationUnit) : UInt
   fun clang_getDiagnostic(CXTranslationUnit, UInt) : CXDiagnostic
   fun clang_getDiagnosticSetFromTU(CXTranslationUnit) : CXDiagnosticSet
-  fun clang_disposeDiagnostic(CXDiagnostic) : Void
-  enum CXDiagnosticDisplayOptions : UInt
-    SourceLocation = 1
-    Column = 2
-    SourceRanges = 4
-    Option = 8
-    CategoryId = 16
-    CategoryName = 32
-  end
-  fun clang_formatDiagnostic(CXDiagnostic, UInt) : CXString
-  fun clang_defaultDiagnosticDisplayOptions() : UInt
-  fun clang_getDiagnosticSeverity(CXDiagnostic) : CXDiagnosticSeverity
-  fun clang_getDiagnosticLocation(CXDiagnostic) : CXSourceLocation
-  fun clang_getDiagnosticSpelling(CXDiagnostic) : CXString
-  fun clang_getDiagnosticOption(CXDiagnostic, CXString*) : CXString
-  fun clang_getDiagnosticCategory(CXDiagnostic) : UInt
-  fun clang_getDiagnosticCategoryName(UInt) : CXString
-  fun clang_getDiagnosticCategoryText(CXDiagnostic) : CXString
-  fun clang_getDiagnosticNumRanges(CXDiagnostic) : UInt
-  fun clang_getDiagnosticRange(CXDiagnostic, UInt) : CXSourceRange
-  fun clang_getDiagnosticNumFixIts(CXDiagnostic) : UInt
-  fun clang_getDiagnosticFixIt(CXDiagnostic, UInt, CXSourceRange*) : CXString
   fun clang_getTranslationUnitSpelling(CXTranslationUnit) : CXString
   fun clang_createTranslationUnitFromSourceFile(CXIndex, Char*, Int, Char**, UInt, CXUnsavedFile*) : CXTranslationUnit
   fun clang_createTranslationUnit(CXIndex, Char*) : CXTranslationUnit
@@ -338,7 +275,10 @@ lib LibC
     OMPArrayShapingExpr = 150
     OMPIteratorExpr = 151
     CXXAddrspaceCastExpr = 152
-    LastExpr = 152
+    ConceptSpecializationExpr = 153
+    RequiresExpr = 154
+    CXXParenListInitExpr = 155
+    LastExpr = 155
     FirstStmt = 200
     UnexposedStmt = 200
     LabelStmt = 201
@@ -429,8 +369,27 @@ lib LibC
     OMPParallelMasterDirective = 285
     OMPDepobjDirective = 286
     OMPScanDirective = 287
-    LastStmt = 287
-    TranslationUnit = 300
+    OMPTileDirective = 288
+    OMPCanonicalLoop = 289
+    OMPInteropDirective = 290
+    OMPDispatchDirective = 291
+    OMPMaskedDirective = 292
+    OMPUnrollDirective = 293
+    OMPMetaDirective = 294
+    OMPGenericLoopDirective = 295
+    OMPTeamsGenericLoopDirective = 296
+    OMPTargetTeamsGenericLoopDirective = 297
+    OMPParallelGenericLoopDirective = 298
+    OMPTargetParallelGenericLoopDirective = 299
+    OMPParallelMaskedDirective = 300
+    OMPMaskedTaskLoopDirective = 301
+    OMPMaskedTaskLoopSimdDirective = 302
+    OMPParallelMaskedTaskLoopDirective = 303
+    OMPParallelMaskedTaskLoopSimdDirective = 304
+    OMPErrorDirective = 305
+    OMPScopeDirective = 306
+    LastStmt = 306
+    TranslationUnit = 350
     FirstAttr = 400
     UnexposedAttr = 400
     IBActionAttr = 401
@@ -486,8 +445,9 @@ lib LibC
     TypeAliasTemplateDecl = 601
     StaticAssert = 602
     FriendDecl = 603
+    ConceptDecl = 604
     FirstExtraDecl = 600
-    LastExtraDecl = 603
+    LastExtraDecl = 604
     OverloadCandidate = 700
   end
   struct CXCursor
@@ -610,8 +570,9 @@ lib LibC
     UAccum = 37
     ULongAccum = 38
     BFloat16 = 39
+    Ibm128 = 40
     FirstBuiltin = 2
-    LastBuiltin = 39
+    LastBuiltin = 40
     Complex = 100
     Pointer = 101
     BlockPointer = 102
@@ -684,12 +645,17 @@ lib LibC
     OCLIntelSubgroupAVCImeResult = 169
     OCLIntelSubgroupAVCRefResult = 170
     OCLIntelSubgroupAVCSicResult = 171
+    OCLIntelSubgroupAVCImeResultSingleReferenceStreamout = 172
+    OCLIntelSubgroupAVCImeResultDualReferenceStreamout = 173
+    OCLIntelSubgroupAVCImeSingleReferenceStreamin = 174
+    OCLIntelSubgroupAVCImeDualReferenceStreamin = 175
     OCLIntelSubgroupAVCImeResultSingleRefStreamout = 172
     OCLIntelSubgroupAVCImeResultDualRefStreamout = 173
     OCLIntelSubgroupAVCImeSingleRefStreamin = 174
     OCLIntelSubgroupAVCImeDualRefStreamin = 175
     ExtVector = 176
     Atomic = 177
+    BTFTagAttributed = 178
   end
   enum CXCallingConv : UInt
     Default = 0
@@ -710,6 +676,9 @@ lib LibC
     PreserveMost = 14
     PreserveAll = 15
     AArch64VectorCall = 16
+    SwiftAsync = 17
+    AArch64SVEPCS = 18
+    M68kRTD = 19
     Invalid = 100
     Unexposed = 200
   end
@@ -723,6 +692,7 @@ lib LibC
   fun clang_getEnumDeclIntegerType(CXCursor) : CXType
   fun clang_getEnumConstantDeclValue(CXCursor) : LongLong
   fun clang_getEnumConstantDeclUnsignedValue(CXCursor) : ULongLong
+  fun clang_Cursor_isBitField(CXCursor) : UInt
   fun clang_getFieldDeclBitWidth(CXCursor) : Int
   fun clang_Cursor_getNumArguments(CXCursor) : Int
   fun clang_Cursor_getArgument(CXCursor, UInt) : CXCursor
@@ -754,6 +724,8 @@ lib LibC
   fun clang_getAddressSpace(CXType) : UInt
   fun clang_getTypedefName(CXType) : CXString
   fun clang_getPointeeType(CXType) : CXType
+  fun clang_getUnqualifiedType(CXType) : CXType
+  fun clang_getNonReferenceType(CXType) : CXType
   fun clang_getTypeDeclaration(CXType) : CXCursor
   fun clang_getDeclObjCTypeEncoding(CXCursor) : CXString
   fun clang_Type_getObjCEncoding(CXType) : CXString
@@ -812,7 +784,6 @@ lib LibC
   fun clang_Type_getNumTemplateArguments(CXType) : Int
   fun clang_Type_getTemplateArgumentAsType(CXType, UInt) : CXType
   fun clang_Type_getCXXRefQualifier(CXType) : CXRefQualifierKind
-  fun clang_Cursor_isBitField(CXCursor) : UInt
   fun clang_isVirtualBase(CXCursor) : UInt
   enum CX_CXXAccessSpecifier : UInt
     InvalidAccessSpecifier = 0
@@ -842,6 +813,9 @@ lib LibC
   end
   alias CXCursorVisitor = (CXCursor, CXCursor, CXClientData) -> CXChildVisitResult
   fun clang_visitChildren(CXCursor, CXCursorVisitor, CXClientData) : UInt
+  type UNDERSCORE_CXChildVisitResult = Void
+  alias CXCursorVisitorBlock = UNDERSCORE_CXChildVisitResult*
+  fun clang_visitChildrenWithBlock(CXCursor, CXCursorVisitorBlock) : UInt
   fun clang_getCursorUSR(CXCursor) : CXString
   fun clang_constructUSR_ObjCClass(Char*) : CXString
   fun clang_constructUSR_ObjCCategory(Char*, Char*) : CXString
@@ -948,9 +922,13 @@ lib LibC
   fun clang_CXXConstructor_isMoveConstructor(CXCursor) : UInt
   fun clang_CXXField_isMutable(CXCursor) : UInt
   fun clang_CXXMethod_isDefaulted(CXCursor) : UInt
+  fun clang_CXXMethod_isDeleted(CXCursor) : UInt
   fun clang_CXXMethod_isPureVirtual(CXCursor) : UInt
   fun clang_CXXMethod_isStatic(CXCursor) : UInt
   fun clang_CXXMethod_isVirtual(CXCursor) : UInt
+  fun clang_CXXMethod_isCopyAssignmentOperator(CXCursor) : UInt
+  fun clang_CXXMethod_isMoveAssignmentOperator(CXCursor) : UInt
+  fun clang_CXXMethod_isExplicit(CXCursor) : UInt
   fun clang_CXXRecord_isAbstract(CXCursor) : UInt
   fun clang_EnumDecl_isScoped(CXCursor) : UInt
   fun clang_CXXMethod_isConst(CXCursor) : UInt
@@ -1118,6 +1096,10 @@ lib LibC
   end
   fun clang_findReferencesInFile(CXCursor, CXFile, CXCursorAndRangeVisitor) : CXResult
   fun clang_findIncludesInFile(CXTranslationUnit, CXFile, CXCursorAndRangeVisitor) : CXResult
+  type UNDERSCORE_CXCursorAndRangeVisitorBlock = Void
+  alias CXCursorAndRangeVisitorBlock = UNDERSCORE_CXCursorAndRangeVisitorBlock*
+  fun clang_findReferencesInFileWithBlock(CXCursor, CXFile, CXCursorAndRangeVisitorBlock) : CXResult
+  fun clang_findIncludesInFileWithBlock(CXTranslationUnit, CXFile, CXCursorAndRangeVisitorBlock) : CXResult
   alias CXIdxClientFile = Void*
   alias CXIdxClientEntity = Void*
   alias CXIdxClientContainer = Void*
@@ -1168,6 +1150,7 @@ lib LibC
     CXXConversionFunction = 24
     CXXTypeAlias = 25
     CXXInterface = 26
+    CXXConcept = 27
   end
   enum CXIdxEntityLanguage : UInt
     None = 0
@@ -1213,7 +1196,7 @@ lib LibC
     class_loc : CXIdxLoc
   end
   enum CXIdxDeclInfoFlags : UInt
-    CXIdxDeclFlag_Skipped = 1
+    Flag_Skipped = 1
   end
   struct CXIdxDeclInfo
     entity_info : CXIdxEntityInfo*
@@ -1340,4 +1323,61 @@ lib LibC
   fun clang_indexLoc_getCXSourceLocation(CXIdxLoc) : CXSourceLocation
   alias CXFieldVisitor = (CXCursor, CXClientData) -> CXVisitorResult
   fun clang_Type_visitFields(CXType, CXFieldVisitor, CXClientData) : UInt
+  enum CXBinaryOperatorKind : UInt
+    Invalid = 0
+    PtrMemD = 1
+    PtrMemI = 2
+    Mul = 3
+    Div = 4
+    Rem = 5
+    Add = 6
+    Sub = 7
+    Shl = 8
+    Shr = 9
+    Cmp = 10
+    LT = 11
+    GT = 12
+    LE = 13
+    GE = 14
+    EQ = 15
+    NE = 16
+    And = 17
+    Xor = 18
+    Or = 19
+    LAnd = 20
+    LOr = 21
+    Assign = 22
+    MulAssign = 23
+    DivAssign = 24
+    RemAssign = 25
+    AddAssign = 26
+    SubAssign = 27
+    ShlAssign = 28
+    ShrAssign = 29
+    AndAssign = 30
+    XorAssign = 31
+    OrAssign = 32
+    Comma = 33
+  end
+  fun clang_getBinaryOperatorKindSpelling(CXBinaryOperatorKind) : CXString
+  fun clang_getCursorBinaryOperatorKind(CXCursor) : CXBinaryOperatorKind
+  enum CXUnaryOperatorKind : UInt
+    Invalid = 0
+    PostInc = 1
+    PostDec = 2
+    PreInc = 3
+    PreDec = 4
+    AddrOf = 5
+    Deref = 6
+    Plus = 7
+    Minus = 8
+    Not = 9
+    LNot = 10
+    Real = 11
+    Imag = 12
+    Extension = 13
+    Coawait = 14
+  end
+  fun clang_getUnaryOperatorKindSpelling(CXUnaryOperatorKind) : CXString
+  fun clang_getCursorUnaryOperatorKind(CXCursor) : CXUnaryOperatorKind
 end
