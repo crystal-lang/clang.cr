@@ -1,9 +1,9 @@
 require "./source_location"
 
 module Clang
-  struct Token
-    Kind = LibC::CXKind
+  alias TokenKind = LibC::CXTokenKind
 
+  struct Token
     def initialize(@translation_unit : TranslationUnit, @token : LibC::CXToken)
     end
 
