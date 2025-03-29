@@ -11,6 +11,8 @@ module Clang
   alias Language = LibC::CXLanguageKind
   alias CXXAccessSpecifier = LibC::CX_CXXAccessSpecifier
   alias StorageClass = LibC::CX_StorageClass
+  alias BinaryOperatorKind = LibC::CXBinaryOperatorKind
+  alias UnaryOperatorKind = LibC::CXUnaryOperatorKind
 
   struct Cursor
     def initialize(@cursor : LibC::CXCursor)
@@ -364,6 +366,14 @@ module Clang
       end
     ensure
       LibC.clang_disposeStringSet(list) if list
+    end
+
+    def binary_operator_kind
+      LibC.clang_getCursorBinaryOperatorKind(self)
+    end
+
+    def unary_operator_kind
+      LibC.clang_getCursorUnaryOperatorKind(self)
     end
 
     def printing_policy
