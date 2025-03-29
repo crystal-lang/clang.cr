@@ -50,6 +50,34 @@ module Clang
       cursor
     end
 
+    def children : Array(Clang::Cursor)
+      children = [] of Clang::Cursor
+      visit_children do |child|
+        children << child
+        Clang::ChildVisitResult::Continue
+      end
+      children
+    end
+
+    def child_at?(index)
+      cursor = nil
+      i = 0
+      visit_children do |child|
+        if i == index
+          cursor = child
+          Clang::ChildVisitResult::Break
+        else
+          i += 1
+          Clang::ChildVisitResult::Continue
+        end
+      end
+      cursor
+    end
+
+    def child_at(index)
+      child_at?(index).not_nil!
+    end
+
     def has_attributes?
       LibC.clang_Cursor_hasAttrs(self) == 1
     end
